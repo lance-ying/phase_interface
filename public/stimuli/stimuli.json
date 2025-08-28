@@ -1,0 +1,192 @@
+[
+  {
+    "name": "video1",
+    "video": "stimuli/video1.mp4",
+    "category": "cooperation",
+    "description": "Two agents working together to move an object",
+    "segments": [
+      { "video": "stimuli/video1.mp4", "time": 5, "description": "Initial approach" },
+      { "video": "stimuli/video1.mp4", "time": 15, "description": "Collaboration begins" },
+      { "video": "stimuli/video1.mp4", "time": 25, "description": "Successful completion" }
+    ],
+    "times": [5, 15, 25],
+    "length": 3,
+    "goal": 1,
+    "statements": [
+      "The red agent believes the green agent is cooperative.",
+      "The green agent thinks the red agent wants to help.",
+      "Both agents believe they can work together."
+    ]
+  },
+  {
+    "name": "video2",
+    "video": "stimuli/video2.mp4",
+    "category": "competition",
+    "description": "Two agents competing for the same resource",
+    "segments": [
+      { "video": "stimuli/video2.mp4", "time": 8, "description": "Discovery of resource" },
+      { "video": "stimuli/video2.mp4", "time": 18, "description": "Competition escalates" },
+      { "video": "stimuli/video2.mp4", "time": 28, "description": "Resolution of conflict" }
+    ],
+    "times": [8, 18, 28],
+    "length": 3,
+    "goal": 2,
+    "statements": [
+      "The red agent believes the green agent is competitive.",
+      "The green agent thinks the red agent wants to win.",
+      "Both agents believe they must compete."
+    ]
+  },
+  {
+    "name": "video3",
+    "video": "stimuli/video3.mp4",
+    "category": "helping",
+    "description": "One agent helping another achieve their goal",
+    "segments": [
+      { "video": "stimuli/video3.mp4", "time": 6, "description": "Recognition of need" },
+      { "video": "stimuli/video3.mp4", "time": 16, "description": "Offering assistance" },
+      { "video": "stimuli/video3.mp4", "time": 26, "description": "Goal achievement" }
+    ],
+    "times": [6, 16, 26],
+    "length": 3,
+    "goal": 3,
+    "statements": [
+      "The red agent believes the green agent needs help.",
+      "The green agent thinks the red agent is altruistic.",
+      "Both agents believe in mutual support."
+    ]
+  },
+  {
+    "name": "video4",
+    "video": "stimuli/video4.mp4",
+    "category": "hindering",
+    "description": "One agent actively preventing another from achieving their goal",
+    "segments": [
+      { "video": "stimuli/video4.mp4", "time": 7, "description": "Goal identification" },
+      { "video": "stimuli/video4.mp4", "time": 17, "description": "Active interference" },
+      { "video": "stimuli/video4.mp4", "time": 27, "description": "Goal prevention" }
+    ],
+    "times": [7, 17, 27],
+    "length": 3,
+    "goal": 4,
+    "statements": [
+      "The red agent believes the green agent is a threat.",
+      "The green agent thinks the red agent is hostile.",
+      "Both agents believe they are in conflict."
+    ]
+  },
+  {
+    "name": "video5",
+    "video": "stimuli/video5.mp4",
+    "category": "neutral",
+    "description": "Two agents pursuing independent goals without interaction",
+    "segments": [
+      { "video": "stimuli/video5.mp4", "time": 9, "description": "Independent movement" },
+      { "video": "stimuli/video5.mp4", "time": 19, "description": "Parallel activities" },
+      { "video": "stimuli/video5.mp4", "time": 29, "description": "Goal completion" }
+    ],
+    "times": [9, 19, 29],
+    "length": 3,
+    "goal": 1,
+    "statements": [
+      "The red agent believes the green agent is irrelevant.",
+      "The green agent thinks the red agent is independent.",
+      "Both agents believe they can ignore each other."
+    ]
+  },
+  {
+    "name": "video6",
+    "video": "stimuli/video6.mp4",
+    "category": "coordination",
+    "description": "Two agents coordinating their actions for mutual benefit",
+    "segments": [
+      { "video": "stimuli/video6.mp4", "time": 10, "description": "Planning phase" },
+      { "video": "stimuli/video6.mp4", "time": 20, "description": "Coordinated action" },
+      { "video": "stimuli/video6.mp4", "time": 30, "description": "Mutual success" }
+    ],
+    "times": [10, 20, 30],
+    "length": 3,
+    "goal": 2,
+    "statements": [
+      "The red agent believes coordination is beneficial.",
+      "The green agent thinks teamwork is necessary.",
+      "Both agents believe in strategic cooperation."
+    ]
+  },
+  {
+    "name": "video7",
+    "video": "stimuli/video7.mp4",
+    "category": "deception",
+    "description": "One agent using deceptive tactics to achieve their goal",
+    "segments": [
+      { "video": "stimuli/video7.mp4", "time": 12, "description": "Deceptive behavior" },
+      { "video": "stimuli/video7.mp4", "time": 22, "description": "Manipulation" },
+      { "video": "stimuli/video7.mp4", "time": 32, "description": "Goal achievement" }
+    ],
+    "times": [12, 22, 32],
+    "length": 3,
+    "goal": 3,
+    "statements": [
+      "The red agent believes deception is effective.",
+      "The green agent thinks the red agent is trustworthy.",
+      "Both agents have different understandings of the situation."
+    ]
+  },
+  {
+    "name": "video8",
+    "video": "stimuli/video8.mp4",
+    "category": "teaching",
+    "description": "One agent teaching another how to accomplish a task",
+    "segments": [
+      { "video": "stimuli/video8.mp4", "time": 11, "description": "Demonstration" },
+      { "video": "stimuli/video8.mp4", "time": 21, "description": "Learning process" },
+      { "video": "stimuli/video8.mp4", "time": 31, "description": "Skill acquisition" }
+    ],
+    "times": [11, 21, 31],
+    "length": 3,
+    "goal": 4,
+    "statements": [
+      "The red agent believes the green agent can learn.",
+      "The green agent thinks the red agent is knowledgeable.",
+      "Both agents believe in the value of education."
+    ]
+  },
+  {
+    "name": "video9",
+    "video": "stimuli/video9.mp4",
+    "category": "negotiation",
+    "description": "Two agents negotiating over resource allocation",
+    "segments": [
+      { "video": "stimuli/video9.mp4", "time": 13, "description": "Initial demands" },
+      { "video": "stimuli/video9.mp4", "time": 23, "description": "Bargaining process" },
+      { "video": "stimuli/video9.mp4", "time": 33, "description": "Agreement reached" }
+    ],
+    "times": [13, 23, 33],
+    "length": 3,
+    "goal": 1,
+    "statements": [
+      "The red agent believes compromise is possible.",
+      "The green agent thinks negotiation is worthwhile.",
+      "Both agents believe in finding middle ground."
+    ]
+  },
+  {
+    "name": "video10",
+    "video": "stimuli/video10.mp4",
+    "category": "leadership",
+    "description": "One agent taking leadership role in a group task",
+    "segments": [
+      { "video": "stimuli/video10.mp4", "time": 14, "description": "Leadership emergence" },
+      { "video": "stimuli/video10.mp4", "time": 24, "description": "Direction setting" },
+      { "video": "stimuli/video10.mp4", "time": 34, "description": "Task completion" }
+    ],
+    "times": [14, 24, 34],
+    "length": 3,
+    "goal": 2,
+    "statements": [
+      "The red agent believes leadership is necessary.",
+      "The green agent thinks the red agent is capable.",
+      "Both agents believe in hierarchical organization."
+    ]
+  }
+] 

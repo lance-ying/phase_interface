@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html ng-app="experimentApp">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phase Interface Experiment</title>
+  
+  <!-- AngularJS -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular-sanitize.min.js"></script>
+  
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+  
+  <!-- App Scripts -->
+  <script src="app.js"></script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: white;
+      min-height: 100vh;
+      box-shadow: 0 0 30px rgba(0,0,0,0.1);
+    }
+
+    .section_title {
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      margin: 20px 0;
+      color: #2c3e50;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background-color: #ecf0f1;
+      border-radius: 4px;
+      margin: 20px 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3498db, #2ecc71);
+      transition: width 0.3s ease;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      margin: 20px 0;
+      overflow: hidden;
+    }
+
+    .panel-heading {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      padding: 25px;
+      text-align: center;
+    }
+
+    .panel-heading h4 {
+      font-size: 20px;
+      font-weight: 300;
+      margin: 0;
+    }
+
+    .panel-body {
+      padding: 30px;
+      line-height: 1.6;
+    }
+
+    .panel-body p {
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+
+    .panel-body ol {
+      margin: 15px 0;
+      padding-left: 25px;
+    }
+
+    .panel-body li {
+      margin-bottom: 8px;
+    }
+
+    .quiz-section {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      margin: 20px 0;
+      padding: 30px;
+    }
+
+    .quiz-section h3 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+      font-size: 22px;
+    }
+
+    .quiz-section ul {
+      margin: 15px 0;
+      padding-left: 25px;
+    }
+
+    .quiz-section li {
+      margin-bottom: 8px;
+    }
+
+    .quiz-question {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 25px;
+      margin: 20px 0;
+      border-left: 4px solid #3498db;
+    }
+
+    .quiz-question p {
+      margin-bottom: 15px;
+    }
+
+    .instruction-video {
+      text-align: center;
+      margin: 25px 0;
+    }
+
+    .instruction-image {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .video-container {
+      text-align: center;
+      margin: 30px 0;
+    }
+
+    .video-player {
+      width: 100%;
+      max-width: 600px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+
+    .question-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+
+    .no-bullets {
+      list-style: none;
+      padding: 0;
+    }
+
+    .no-bullets li {
+      margin-bottom: 12px;
+      padding: 15px;
+      background: white;
+      border-radius: 6px;
+      border: 2px solid #e9ecef;
+      transition: all 0.2s ease;
+    }
+
+    .no-bullets li:hover {
+      border-color: #3498db;
+      background: #f8f9fa;
+    }
+
+    .no-bullets input[type="checkbox"],
+    .no-bullets input[type="radio"] {
+      margin-right: 12px;
+      transform: scale(1.2);
+    }
+
+    .no-bullets label {
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+    }
+
+    .rating-scale {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 20px 0;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      border: 2px solid #e9ecef;
+    }
+
+    .rating-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .rating-button:hover {
+      transform: translateY(-2px);
+    }
+
+    .rating-number {
+      font-size: 18px;
+      font-weight: bold;
+      color: #3498db;
+      margin-bottom: 5px;
+    }
+
+    .rating-text {
+      font-size: 12px;
+      color: #7f8c8d;
+      text-align: center;
+      max-width: 80px;
+    }
+
+    .rating-slider {
+      width: 200px;
+      margin: 0 20px;
+    }
+
+    .rating-input {
+      width: 80px;
+      padding: 8px;
+      text-align: center;
+      border: 2px solid #e9ecef;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .rating-label {
+      font-size: 14px;
+      color: #7f8c8d;
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    .controls {
+      text-align: center;
+      margin: 30px 0;
+    }
+
+    .button {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+
+    .button:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .repeat-instructions {
+      background: #e74c3c;
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      margin: 20px 0;
+      font-weight: bold;
+    }
+
+    .scene-instructions {
+      margin-bottom: 15px;
+    }
+
+    .quiz_questions {
+      width: 80%;
+      margin: 0 auto;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    .checkboxtext {
+      margin-left: 8px;
+    }
+
+    .underline {
+      text-decoration: underline;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .main {
+        margin: 0;
+        border-radius: 0;
+      }
+      
+      .rating-scale {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .rating-slider {
+        width: 100%;
+        margin: 10px 0;
+      }
+    }
+  </style>
+</head>
+
+<body ng-controller="ExperimentController">
+  <div class="main">
+    
+    <!-- Instructions Section -->
+    <div ng-if="section === 'instructions'">
+      
+      <!-- Welcome Panel -->
+      <div ng-if="inst_id === 0" class="panel">
+        <div class="panel-heading">
+          <h4>We're researchers at MIT running an experiment to help computers learn how to recognize social interactions</h4>
+        </div>
+        <div class="panel-body">
+          <p><img src="https://i.imgur.com/LMbjSIp.png" style="width:250px;" /></p>
+          <p>Have you ever wanted to have a robot that helps around the home and takes care of you? You'll be helping make that happen by showing them what kinds of social interactions there are.</p>
+          <p><strong>What you'll do:</strong></p>
+          <ol>
+            <li>Read the instructions and answer the quizzes</li>
+            <li>Watch 10 short videos until the end (most videos are up to 30 seconds long and are at most 1 minute)</li>
+            <li>Answer several multiple-choice questions about each video</li>
+            <li>Each video is an animated clip describing an environment with creatures and objects</li>
+          </ol>
+          <p><strong>Important:</strong> You cannot go back to previous videos, so please pay attention to each one.</p>
+          
+
+        </div>
+      </div>
+
+      <!-- Tutorial Section 1: Creatures - Actions -->
+      <div ng-if="inst_id === 1" class="quiz-section">
+        <h3><strong>Creatures - Actions</strong></h3>
+        <p>A creature:</p>
+        <ul>
+          <li>moves by applying force</li>
+          <li>can push another entity</li>
+          <li>can grab an entity and drag it along</li>
+          <li>cannot move through a wall</li>
+        </ul>
+        <p>The following video demonstrates creatures taking actions in the environment:</p>
+        <div class="instruction-video">
+          <video class="instruction-image" controls autoplay muted loop>
+            <source src="data/entities/intro.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+
+      <!-- Tutorial Section 2: Creatures - Knowledge about the environment -->
+      <div ng-if="inst_id === 2" class="quiz-section">
+        <h3><strong>Creatures - Knowledge about the environment</strong></h3>
+        <p>A creature:</p>
+        <ul>
+          <li>knows the environment structure and what entities it contains.</li>
+          <li>can't see through walls.</li>
+          <li>knows if another entity is touching it.</li>
+        </ul>
+        <p>I.e., <strong>a creature only knows the locations of entities it can see or touch</strong>.</p>
+        <p>A creature has an estimation of where the other entities are based on what it can see or touch. This estimation changes as the creature takes actions and sees different parts of the environment.</p>
+        
+        <p>The following image demonstrates what the <strong>red creature can see</strong> at this moment (bright area): the <strong>green creature and pink object, but not the blue object</strong>.</p>
+        <div class="instruction-video">
+          <img src="data/entities/intro_fov.png" class="instruction-image" width="220">
+        </div>
+        
+        <p>The following video demonstrates the red creature taking actions in the environment to put the blue object in the red landmark. <strong>At first the red creature can't see the blue object so it must find it</strong>.</p>
+        <div class="instruction-video">
+          <video class="instruction-image" controls autoplay muted loop>
+            <source src="data/entities/intro_finding.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        
+        <p>The following image demonstrates what the <strong>green creature knows</strong> at this moment <strong>based on touch</strong>: the <strong>pink object, but not the red creature and blue object</strong>.</p>
+        <div class="instruction-video">
+          <img src="data/entities/intro_touch_sensor_green.png" class="instruction-image" width="220">
+        </div>
+      </div>
+
+      <!-- Tutorial Section 3: Creatures - Goals -->
+      <div ng-if="inst_id === 3" class="quiz-section">
+        <h3><strong>Creatures - Goals</strong></h3>
+        <p>A creature may have:</p>
+        <ul>
+          <li>a <strong>personal</strong> goal: get to a <strong>landmark</strong>, get to another <strong>creature</strong> or put an <strong>object on a landmark</strong> (see videos below).</li>
+          <li>a <strong>social</strong> goal: <strong>help, hinder or avoid</strong> another creature trying to achieve their personal goal.</li>
+        </ul>
+        <p>A creature has <strong>1 goal</strong>. Creatures <strong>don't change</strong> their goals. Creatures <strong>know about each other's goals</strong>.</p>
+        
+        <div class="instruction-video">
+          <video class="instruction-image" controls autoplay muted loop>
+            <source src="data/entities/intro_goto_place.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <p style="text-align: center; margin-top: 10px;"><strong>Get to yellow landmark</strong></p>
+          
+          <video class="instruction-image" controls autoplay muted loop style="margin-top: 20px;">
+            <source src="data/entities/intro_goto_entity.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <p style="text-align: center; margin-top: 10px;"><strong>Get to green creature</strong></p>
+          
+          <video class="instruction-image" controls autoplay muted loop style="margin-top: 20px;">
+            <source src="data/entities/intro_item_to_place.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <p style="text-align: center; margin-top: 10px;"><strong>Put blue object on red landmark</strong></p>
+        </div>
+      </div>
+
+      <!-- Tutorial Section 4: Creatures - Relations -->
+      <div ng-if="inst_id === 4" class="quiz-section">
+        <h3><strong>Creatures - Relations</strong></h3>
+        <p>A relation between 2 creatures can be described as:</p>
+        <ul>
+          <li><strong>Adversarial</strong>, i.e. one creature is <strong>hindering</strong> or <strong>chasing</strong> the other, or the creatures are <strong>competing</strong> over an object</li>
+          <li><strong>Neutral</strong>, i.e. each creature has its <strong>own goal</strong> not related to the other</li>
+          <li><strong>Friendly</strong>, i.e. <strong>helping</strong> or <strong>working together</strong> towards the same goal</li>
+        </ul>
+        <p>See examples:</p>
+        
+        <div class="instruction-video">
+          <video class="instruction-image" controls autoplay muted loop>
+            <source src="data/entities/adversarial.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <p style="text-align: center; margin-top: 10px;"><strong>Adversarial</strong><br>competing over pink object</p>
+          
+          <video class="instruction-image" controls autoplay muted loop style="margin-top: 20px;">
+            <source src="data/entities/neutral.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <p style="text-align: center; margin-top: 10px;"><strong>Neutral</strong><br>red - get to red landmark<br>green - get pink object to green landmark</p>
+          
+          <video class="instruction-image" controls autoplay muted loop style="margin-top: 20px;">
+            <source src="data/entities/friendly.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <p style="text-align: center; margin-top: 10px;"><strong>Friendly</strong><br>work together to get<br>blue object to yellow landmark</p>
+        </div>
+      </div>
+
+      <!-- Tutorial Section 5: Creatures - Strength -->
+      <div ng-if="inst_id === 5" class="quiz-section">
+        <h3><strong>Creatures - Strength</strong></h3>
+        <p>Creatures can have different strengths.</p>
+        <p>Strength is <strong>not</strong> associated with size, however bigger entities are heavier.</p>
+        <p>The following video demonstrates creatures trying to move objects of the same size and weight, each to a different landmark. <img src="data/entities/agent0.png" alt="red" style="width:25px;"> is stronger.</p>
+        
+        <div class="instruction-video">
+          <video class="instruction-image" controls autoplay muted loop>
+            <source src="data/entities/strength.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+
+      <!-- Quiz 1: Knowledge about the environment -->
+      <div ng-if="inst_id === 6" class="quiz-question">
+        <p class="scene-instructions" style="font-weight: bold; font-size: 22px;">Quiz 1: Knowledge about the environment</p>
+        <p class="scene-instructions" style="font-weight: bold; font-size: 18px;">Answer the question about the image.</p>
+        <p class="scene-instructions" style="font-weight: bold; font-size: 18px;">
+          <img src="data/entities/agent0.png" alt="red" style="width:25px;"> and
+          <img src="data/entities/agent1.png" alt="green" style="width:25px;"> are creatures,
+          <img src="data/entities/item0.png" alt="blue" style="width:25px;"> and
+          <img src="data/entities/item1.png" alt="pink" style="width:25px;"> are objects.</p>
+        
+        <div class="instruction-video">
+          <img src="data/entities/quiz_fov.png" class="instruction-image" width="220">
+        </div>
+        
+        <div class="container">
+          <div class="quiz_questions">
+            <p align="center"><b>Can <img src="data/entities/agent1.png" style="width:25px;"> see <img src="data/entities/agent0.png" style="width:25px;"> ?</b></p>
+                          <div id="radio" align="left" style="width:150px;">
+                <div>
+                  <input type="radio" id="quiz1_see_yes" name="quiz1_see" ng-model="quiz.quiz1_see" value="yes">
+                  <label for="quiz1_see_yes">yes</label>
+                </div>
+                <div>
+                  <input type="radio" id="quiz1_see_no" name="quiz1_see" ng-model="quiz.quiz1_see" value="no">
+                  <label for="quiz1_see_no">no</label>
+                </div>
+              </div>
+            <p align="center"><b>Does <img src="data/entities/agent0.png" style="width:25px;"> know where <img src="data/entities/item0.png" style="width:25px;"> is?</b></p>
+                          <div id="radio" align="left" style="width:150px;">
+                <div>
+                  <input type="radio" id="quiz1_touch_yes" name="quiz1_touch" ng-model="quiz.quiz1_touch" value="yes">
+                  <label for="quiz1_touch_yes">yes</label>
+                </div>
+                <div>
+                  <input type="radio" id="quiz1_touch_no" name="quiz1_touch" ng-model="quiz.quiz1_touch" value="no">
+                  <label for="quiz1_touch_no">no</label>
+                </div>
+              </div>
+          </div>
+          <br /><br />
+                      <div>
+              <button class="button" ng-click="submitQuiz1()">Submit Quiz 1</button><br>
+
+              quiz 1 of 4
+            </div>
+        </div>
+      </div>
+
+      <!-- Quiz 2: Personal goals -->
+      <div ng-if="inst_id === 7" class="quiz-question">
+        <p class="scene-instructions" style="font-weight: bold; font-size: 22px;">Quiz 2: Personal goals</p>
+        <p class="scene-instructions" style="font-weight: bold; font-size: 18px;">Please watch the video, then answer the question.</p>
+        <p>Videos play when clicking on them. You can play or pause as you need to. You can watch the video as many times as needed in order to answer the questions.</p>
+        <p class="scene-instructions" style="font-weight: bold; font-size: 18px;">
+          <img src="data/entities/agent0.png" alt="red" style="width:25px;"> and
+          <img src="data/entities/agent1.png" alt="green" style="width:25px;"> are creatures,
+          <img src="data/entities/item0.png" alt="blue" style="width:25px;"> and
+          <img src="data/entities/item1.png" alt="pink" style="width:25px;"> are objects.</p>
+        
+        <div class="instruction-video">
+          <video class="instruction-image" controls>
+            <source src="data/entities/personal_goal_quiz.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        
+        <div class="container">
+          <div class="quiz_questions">
+            <p align="center"><b>What is <img src="data/entities/agent0.png" style="width:25px;">'s personal goal?</b></p>
+            <div id="radio" align="left" style="width:60%;">
+              <div>
+                <input type="radio" id="quiz2_lm2" name="quiz2" ng-model="quiz.quiz2" value="lm2">
+                <label for="quiz2_lm2"><img src="data/entities/agent0.png" style="width:25px;"> wants to get to <img src="data/entities/lm2.png" style="width:25px;"></label>
+              </div>
+              <div>
+                <input type="radio" id="quiz2_lm1" name="quiz2" ng-model="quiz.quiz2" value="lm1">
+                <label for="quiz2_lm1"><img src="data/entities/agent0.png" style="width:25px;"> wants to get to <img src="data/entities/lm1.png" style="width:25px;"></label>
+              </div>
+              <div>
+                <input type="radio" id="quiz2_lm0" name="quiz2" ng-model="quiz.quiz2" value="lm0">
+                <label for="quiz2_lm0"><img src="data/entities/agent0.png" style="width:25px;"> wants to get to <img src="data/entities/lm0.png" style="width:25px;"></label>
+              </div>
+              <div>
+                <input type="radio" id="quiz2_lm3" name="quiz2" ng-model="quiz.quiz2" value="lm3">
+                <label for="quiz2_lm3"><img src="data/entities/agent0.png" style="width:25px;"> wants to get to <img src="data/entities/lm3.png" style="width:25px;"></label>
+              </div>
+            </div>
+          </div>
+          <br /><br />
+          <div>
+            <button class="button" ng-click="submitQuiz2()">Submit Quiz 2</button><br>quiz 2 of 4
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz 3: Social goals -->
+      <div ng-if="inst_id === 8" class="quiz-question">
+        <p class="scene-instructions" style="font-weight: bold; font-size: 22px;">Quiz 3: Social goals</p>
+        <p class="scene-instructions" style="font-weight: bold; font-size: 18px;">Please watch the video, then answer the question.</p>
+        <p>Videos play when clicking on them. You can play or pause as you need to. You can watch the video as many times as needed in order to answer the questions.</p>
+        <p class="scene-instructions" style="font-weight: bold; font-size: 18px;">
+          <img src="data/entities/agent0.png" alt="red" style="width:25px;"> and
+          <img src="data/entities/agent1.png" alt="green" style="width:25px;"> are creatures,
+          <img src="data/entities/item0.png" alt="blue" style="width:25px;"> and
+          <img src="data/entities/item1.png" alt="pink" style="width:25px;"> are objects.</p>
+        
+        <div class="instruction-video">
+          <video class="instruction-image" controls>
+            <source src="data/entities/helping_quiz2.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        
+        <div class="container">
+          <div class="quiz_questions">
+            <p align="center"><b>What is <img src="data/entities/agent0.png" style="width:25px;">'s social goal?</b></p>
+            <div id="radio" align="left" style="width:60%;">
+              <div>
+                <input type="radio" id="quiz3_help" name="quiz3" ng-model="quiz.quiz3" value="help">
+                <label for="quiz3_help"><img src="data/entities/agent0.png" style="width:25px;"> wants to help <img src="data/entities/agent1.png" style="width:25px;"></label>
+              </div>
+              <div>
+                <input type="radio" id="quiz3_hinder" name="quiz3" ng-model="quiz.quiz3" value="hinder">
+                <label for="quiz3_hinder"><img src="data/entities/agent0.png" style="width:25px;"> wants to hinder <img src="data/entities/agent1.png" style="width:25px;"></label>
+              </div>
+            </div>
+          </div>
+          <br /><br />
+          <div>
+            <button class="button" ng-click="submitQuiz3()">Submit Quiz 3</button><br>quiz 3 of 4
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz 4: Strengths -->
+      <div ng-if="inst_id === 9" class="quiz-question">
+        <p class="scene-instructions" style="font-weight: bold; font-size: 22px;">Quiz 4: Strengths</p>
+        <p class="scene-instructions" style="font-weight: bold; font-size: 18px;">Please watch the video, then answer the question.</p>
+        <p>Videos play when clicking on them. You can play or pause as you need to. You can watch the video as many times as needed in order to answer the questions.</p>
+        <p class="scene-instructions" style="font-weight: bold; font-size: 18px;">
+          <img src="data/entities/agent0.png" alt="red" style="width:25px;"> and
+          <img src="data/entities/agent1.png" alt="green" style="width:25px;"> are creatures,
+          <img src="data/entities/item0.png" alt="blue" style="width:25px;"> and
+          <img src="data/entities/item1.png" alt="pink" style="width:25px;"> are objects.</p>
+        
+        <div class="instruction-video">
+          <video class="instruction-image" controls>
+            <source src="data/entities/quiz3.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        
+        <div class="container">
+          <div class="quiz_questions">
+            <p align="center"><b>Which creature is stronger?</b></p>
+            <div id="radio" align="left" style="width:60%;">
+              <div>
+                <input type="radio" id="quiz4_agent0" name="quiz4" ng-model="quiz.quiz4" value="agent0">
+                <label for="quiz4_agent0"><img src="data/entities/agent0.png" style="width:25px;"></label>
+              </div>
+              <div>
+                <input type="radio" id="quiz4_agent1" name="quiz4" ng-model="quiz.quiz4" value="agent1">
+                <label for="quiz4_agent1"><img src="data/entities/agent1.png" style="width:25px;"></label>
+              </div>
+              <div>
+                <input type="radio" id="quiz4_same" name="quiz4" ng-model="quiz.quiz4" value="same">
+                <label for="quiz4_same">Same</label>
+              </div>
+            </div>
+          </div>
+          <br /><br />
+          <div>
+            <button class="button" ng-click="submitQuiz4()">Submit Quiz 4</button><br>quiz 4 of 4
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz Complete - Congratulations Page -->
+      <div ng-if="inst_id === 10" class="quiz-section">
+        <h3><strong>Congratulations!</strong></h3>
+        <p>You answered all quiz questions correctly! Great job!</p>
+        <p>You will now start the main experiment.</p>
+        
+        <!-- Navigation button -->
+        <div class="controls" style="text-align: center; margin-top: 30px;">
+          <button class="button" ng-click="startMainExperiment()">
+            Start Main Experiment <i class="fa fa-play"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Repeat Instructions Warning -->
+      <div ng-if="show_repeat_warning" class="repeat-instructions">
+        <p>Please read the instructions again and retake the quiz.</p>
+      </div>
+
+      <!-- Controls - Only show during tutorial sections, not during quizzes -->
+      <div class="controls" ng-if="inst_id < 6">
+        <button class="button" ng-click="advance()" ng-disabled="!canAdvanceInstructions()">
+          Next&ensp;▶
+        </button>
+      </div>
+    </div>
+
+    <!-- Video Stimuli Section -->
+    <div ng-if="section === 'stimuli'">
+      <div class="section_title">Round {{stim_id+1}}/{{stimuli_set.length}}</div>
+      
+      <div class="progress-bar">
+        <div class="progress-fill" ng-style="{'width': (stim_id / stimuli_set.length * 100) + '%'}"></div>
+      </div>
+
+      <!-- Video Display -->
+      <div class="video-container">
+        <video class="video-player" controls autoplay>
+          <source ng-src="{{stimuli_set[stim_id].video}}" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      <!-- Questions Section (below video) -->
+      <div ng-if="!hide_questions()" class="quiz-section">
+        
+        <!-- Goal Question -->
+        <div ng-if="has_goal_question()" class="quiz-question">
+          <p class="question-text"><strong>What are the agents' goals in this interaction?</strong></p>
+          <ul class="no-bullets">
+            <li><input type="checkbox" ng-model="response.goals[0]" ng-change="validate_goal()" ng-disabled="disable_questions()" id="goal0">
+              <label for="goal0"><span class='checkboxtext'>Red agent wants to move to green landmark</span></label>
+            </li>
+            <li><input type="checkbox" ng-model="response.goals[1]" ng-change="validate_goal()" ng-disabled="disable_questions()" id="goal1">
+              <label for="goal1"><span class='checkboxtext'>Green agent wants to move to red landmark</span></label>
+            </li>
+            <li><input type="checkbox" ng-model="response.goals[2]" ng-change="validate_goal()" ng-disabled="disable_questions()" id="goal2">
+              <label for="goal2"><span class='checkboxtext'>Both agents want to cooperate</span></label>
+            </li>
+            <li><input type="checkbox" ng-model="response.goals[3]" ng-change="validate_goal()" ng-disabled="disable_questions()" id="goal3">
+              <label for="goal3"><span class='checkboxtext'>Both agents want to compete</span></label>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Belief Question -->
+        <div ng-if="has_belief_question()" class="quiz-question">
+          <p class="question-text"><strong>Please rate the following statements about the agents' <span class="underline">current beliefs</span>:</strong></p>
+          <ul class="no-bullets" ng-repeat="stmt in belief_statements track by $index">
+            <span class="statement"><strong>Statement:</strong> <span ng-bind-html="style_statement(stmt)"></span></span>
+            <div class="rating-scale">
+              <div class="rating-button" ng-repeat="n in [1, 2, 3, 4, 5, 6, 7]">
+                <label for="belief_rating_{{$parent.$index}}_{{n}}" class="rating-number">{{n}}</label>
+                <input type="radio" name="belief_rating_{{$parent.$index}}" id="belief_rating_{{$parent.$index}}_{{n}}"
+                  ng-model="response.beliefs[$parent.$index]" ng-value="n" ng-change="validate_belief()"
+                  ng-disabled="disable_questions()"/>
+                <label for="belief_rating_{{$parent.$index}}_{{n}}" class="rating-text" ng-bind-html="rating_text[n-1]"></label>
+              </div>
+            </div>
+          </ul>
+        </div>
+
+        <!-- Social Interaction Rating -->
+        <div ng-if="has_social_question()" class="quiz-question">
+          <p class="question-text"><strong>How would you rate the level of social interaction between the red and green agents?</strong></p>
+          <div class="rating-scale">
+            <span class="rating-label">1<br>Adversarial</span>
+            <input type="range" min="1" max="7" ng-model="response.social_rating" class="rating-slider">
+            <span class="rating-label">7<br>Friendly</span>
+          </div>
+          <div style="text-align: center;">
+            <input type="number" min="1" max="7" ng-model="response.social_rating" class="rating-input">
+          </div>
+          <p style="text-align: center; margin-top: 10px;">
+            <strong>1 = Adversarial</strong> | <strong>4 = Neutral</strong> | <strong>7 = Friendly</strong>
+          </p>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="button" ng-click="advance()" ng-disabled="!canProceed()">
+          Next&ensp;▶
+        </button>
+      </div>
+    </div>
+
+    <!-- End Screen -->
+    <div ng-if="section === 'endscreen'" class="quiz-section">
+      <h2>Experiment Complete!</h2>
+      <p>Thank you for participating in our experiment.</p>
+      <p>Your responses have been recorded.</p>
+    </div>
+
+  </div>
+</body>
+</html> 
