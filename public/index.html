@@ -492,13 +492,6 @@
                           </div>
                           <div class="slider-group">
                               <label class="slider-option">
-                                  <span class="option-text">No landmark goal</span>
-                                  <input type="range" min="0" max="100" ng-model="response.agent0_landmark_goal" class="goal-slider" ng-change="markAnswered('agent0_landmark')">
-                                  <span class="slider-value">{{response.agent0_landmark_goal || 0}}%</span>
-                              </label>
-                          </div>
-                          <div class="slider-group">
-                              <label class="slider-option">
                                   <span class="option-text">Blue landmark <img src="data/entities/lm0.png" style="width:20px; vertical-align: middle;"></span>
                                   <input type="range" min="0" max="100" ng-model="response.agent0_lm0_certainty" class="goal-slider" ng-change="markAnswered('agent0_landmark')">
                                   <span class="slider-value">{{response.agent0_lm0_certainty || 0}}%</span>
@@ -519,6 +512,13 @@
                                   <span class="slider-value">{{response.agent0_lm3_certainty || 0}}%</span>
                               </label>
                           </div>
+                          <div class="slider-group">
+                              <label class="slider-option">
+                                  <span class="option-text">No landmark goal</span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent0_landmark_goal" class="goal-slider" ng-change="markAnswered('agent0_landmark')">
+                                  <span class="slider-value">{{response.agent0_landmark_goal || 0}}%</span>
+                              </label>
+                          </div>
                       </div>
                       
                       <div class="goal-block">
@@ -528,13 +528,6 @@
                                   <span>0% Definitely No</span>
                                   <span>50% Unsure</span>
                                   <span>100% Definitely Yes</span>
-                              </div>
-                                                            <div class="slider-group">
-                                  <label class="slider-option">
-                                      <span class="option-text">No object goal</span>
-                                      <input type="range" min="0" max="100" ng-model="response.agent0_object_goal" class="goal-slider" ng-change="markAnswered('agent0_object')">
-                                      <span class="slider-value">{{response.agent0_object_goal || 0}}%</span>
-                                  </label>
                               </div>
                               <div class="slider-group">
                                   <label class="slider-option">
@@ -546,6 +539,13 @@
                                       <span class="option-text">Pink object <img src="data/entities/item1.png" style="width:20px; vertical-align: middle;"></span>
                                       <input type="range" min="0" max="100" ng-model="response.agent0_item1_certainty" class="goal-slider" ng-change="markAnswered('agent0_object')">
                                       <span class="slider-value">{{response.agent0_item1_certainty || 0}}%</span>
+                                  </label>
+                              </div>
+                              <div class="slider-group">
+                                  <label class="slider-option">
+                                      <span class="option-text">No object goal</span>
+                                      <input type="range" min="0" max="100" ng-model="response.agent0_object_goal" class="goal-slider" ng-change="markAnswered('agent0_object')">
+                                      <span class="slider-value">{{response.agent0_object_goal || 0}}%</span>
                                   </label>
                               </div>
                           </div>
@@ -579,13 +579,6 @@
                           </div>
                           <div class="slider-group">
                               <label class="slider-option">
-                                  <span class="option-text">No landmark goal</span>
-                                  <input type="range" min="0" max="100" ng-model="response.agent1_landmark_goal" class="goal-slider" ng-change="markAnswered('agent1_landmark')">
-                                  <span class="slider-value">{{response.agent1_landmark_goal || 0}}%</span>
-                              </label>
-                          </div>
-                          <div class="slider-group">
-                              <label class="slider-option">
                                   <span class="option-text">Blue landmark <img src="data/entities/lm0.png" style="width:20px; vertical-align: middle;"></span>
                                   <input type="range" min="0" max="100" ng-model="response.agent1_lm0_certainty" class="goal-slider" ng-change="markAnswered('agent1_landmark')">
                                   <span class="slider-value">{{response.agent1_lm0_certainty || 0}}%</span>
@@ -606,6 +599,13 @@
                                   <span class="slider-value">{{response.agent1_lm3_certainty || 0}}%</span>
                               </label>
                           </div>
+                          <div class="slider-group">
+                              <label class="slider-option">
+                                  <span class="option-text">No landmark goal</span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent1_landmark_goal" class="goal-slider" ng-change="markAnswered('agent1_landmark')">
+                                  <span class="slider-value">{{response.agent1_landmark_goal || 0}}%</span>
+                              </label>
+                          </div>
                       </div>
                       
                       <div class="goal-block">
@@ -618,13 +618,6 @@
                               </div>
                               <div class="slider-group">
                                   <label class="slider-option">
-                                      <span class="option-text">No object goal</span>
-                                      <input type="range" min="0" max="100" ng-model="response.agent1_object_goal" class="goal-slider" ng-change="markAnswered('agent1_object')">
-                                      <span class="slider-value">{{response.agent1_object_goal || 0}}%</span>
-                                  </label>
-                              </div>
-                              <div class="slider-group">
-                                  <label class="slider-option">
                                       <span class="option-text">Blue object <img src="data/entities/item0.png" style="width:20px; vertical-align: middle;"></span>
                                       <input type="range" min="0" max="100" ng-model="response.agent1_item0_certainty" class="goal-slider" ng-change="markAnswered('agent1_object')">
                                       <span class="slider-value">{{response.agent1_item0_certainty || 0}}%</span>
@@ -633,6 +626,13 @@
                                       <span class="option-text">Pink object <img src="data/entities/item1.png" style="width:20px; vertical-align: middle;"></span>
                                       <input type="range" min="0" max="100" ng-model="response.agent1_item1_certainty" class="goal-slider" ng-change="markAnswered('agent1_object')">
                                       <span class="slider-value">{{response.agent1_item1_certainty || 0}}%</span>
+                                  </label>
+                              </div>
+                              <div class="slider-group">
+                                  <label class="slider-option">
+                                      <span class="option-text">No object goal</span>
+                                      <input type="range" min="0" max="100" ng-model="response.agent1_object_goal" class="goal-slider" ng-change="markAnswered('agent1_object')">
+                                      <span class="slider-value">{{response.agent1_object_goal || 0}}%</span>
                                   </label>
                               </div>
                           </div>
