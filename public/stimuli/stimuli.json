@@ -1,192 +1,192 @@
 [
-  {
-    "name": "chasing",
-    "video": "stimuli/chasing.mp4",
-    "category": "competition",
-    "description": "One agent chasing another agent",
-    "segments": [
-      { "video": "stimuli/chasing.mp4", "time": 1, "description": "Chase begins", "start": 0, "end": 1 },
-      { "video": "stimuli/chasing.mp4", "time": 2, "description": "Chase continues", "start": 1, "end": 2 },
-      { "video": "stimuli/chasing.mp4", "time": 3, "description": "Chase resolution", "start": 2, "end": 3 }
-    ],
-    "times": [1, 2, 3],
-    "length": 3,
-    "goal": 2,
-    "statements": [
-      "The red agent believes the green agent is trying to escape.",
-      "The green agent thinks the red agent is pursuing them.",
-      "Both agents believe they are in a chase scenario."
-    ]
-  },
-  {
-    "name": "fighting",
-    "video": "stimuli/fighting.mp4",
-    "category": "competition",
-    "description": "Two agents engaged in physical conflict",
-    "segments": [
-      { "video": "stimuli/fighting.mp4", "time": 1, "description": "Conflict initiation", "start": 0, "end": 1 },
-      { "video": "stimuli/fighting.mp4", "time": 2, "description": "Fight escalates", "start": 1, "end": 2 },
-      { "video": "stimuli/fighting.mp4", "time": 3, "description": "Fight resolution", "start": 2, "end": 3 }
-    ],
-    "times": [1, 3, 7],
-    "length": 10,
-    "goal": 2,
-    "statements": [
-      "The red agent believes the green agent is hostile.",
-      "The green agent thinks the red agent is aggressive.",
-      "Both agents believe they must defend themselves."
-    ]
-  },
-  {
-    "name": "attacking",
-    "video": "stimuli/attacking.mp4",
-    "category": "hindering",
-    "description": "One agent actively attacking another",
-    "segments": [
-      { "video": "stimuli/attacking.mp4", "time": 1, "description": "Attack preparation", "start": 0, "end": 1 },
-      { "video": "stimuli/attacking.mp4", "time": 2, "description": "Attack execution", "start": 1, "end": 2 },
-      { "video": "stimuli/attacking.mp4", "time": 3, "description": "Attack completion", "start": 2, "end": 3 }
-    ],
-    "times": [1, 2, 3],
-    "length": 3,
-    "goal": 4,
-    "statements": [
-      "The red agent believes the green agent is vulnerable.",
-      "The green agent thinks the red agent is dangerous.",
-      "Both agents believe they are in a hostile situation."
-    ]
-  },
-  {
-    "name": "blocking_1",
-    "video": "stimuli/blocking_1.mp4",
-    "category": "hindering",
-    "description": "One agent blocking another's path or goal",
-    "segments": [
-      { "video": "stimuli/blocking_1.mp4", "time": 1, "description": "Path obstruction", "start": 0, "end": 1 },
-      { "video": "stimuli/blocking_1.mp4", "time": 2, "description": "Blocking continues", "start": 1, "end": 2 },
-      { "video": "stimuli/blocking_1.mp4", "time": 3, "description": "Blocking resolution", "start": 2, "end": 3 }
-    ],
-    "times": [1, 2, 3],
-    "length": 3,
-    "goal": 4,
-    "statements": [
-      "The red agent believes the green agent wants to pass.",
-      "The green agent thinks the red agent is obstructing.",
-      "Both agents believe there is a conflict of interest."
-    ]
-  },
-  {
-    "name": "helping_physically_2",
-    "video": "stimuli/helping_physically_2.mp4",
-    "category": "helping",
-    "description": "One agent physically helping another achieve a goal",
-    "segments": [
-      { "video": "stimuli/helping_physically_2.mp4", "time": 1, "description": "Recognition of need", "start": 0, "end": 1 },
-      { "video": "stimuli/helping_physically_2.mp4", "time": 2, "description": "Physical assistance", "start": 1, "end": 2 },
-      { "video": "stimuli/helping_physically_2.mp4", "time": 3, "description": "Goal achievement", "start": 2, "end": 3 }
-    ],
-    "times": [1, 2, 3],
-    "length": 3,
-    "goal": 3,
-    "statements": [
-      "The red agent believes the green agent needs help.",
-      "The green agent thinks the red agent is supportive.",
-      "Both agents believe in cooperation."
-    ]
-  },
-  {
-    "name": "hiding",
-    "video": "stimuli/hiding.mp4",
-    "category": "neutral",
-    "description": "One agent hiding from another",
-    "segments": [
-      { "video": "stimuli/hiding.mp4", "time": 1, "description": "Hiding behavior", "start": 0, "end": 1 },
-      { "video": "stimuli/hiding.mp4", "time": 2, "description": "Hiding continues", "start": 1, "end": 2 },
-      { "video": "stimuli/hiding.mp4", "time": 3, "description": "Hiding outcome", "start": 2, "end": 3 }
-    ],
-    "times": [1, 2, 3],
-    "length": 3,
-    "goal": 1,
-    "statements": [
-      "The red agent believes the green agent is searching.",
-      "The green agent thinks the red agent is hidden.",
-      "Both agents believe they are in a hide-and-seek scenario."
-    ]
-  },
-  {
-    "name": "stealing",
-    "video": "stimuli/stealing.mp4",
-    "category": "hindering",
-    "description": "One agent taking something from another",
-    "segments": [
-      { "video": "stimuli/stealing.mp4", "time": 1, "description": "Theft attempt", "start": 0, "end": 1 },
-      { "video": "stimuli/stealing.mp4", "time": 2, "description": "Theft execution", "start": 1, "end": 2 },
-      { "video": "stimuli/stealing.mp4", "time": 3, "description": "Theft completion", "start": 2, "end": 3 }
-    ],
-    "times": [1, 2, 3],
-    "length": 3,
-    "goal": 4,
-    "statements": [
-      "The red agent believes the green agent has something valuable.",
-      "The green agent thinks the red agent is a thief.",
-      "Both agents believe there is a conflict over resources."
-    ]
-  },
-  {
-    "name": "chasing3",
-    "video": "stimuli/chasing3.mp4",
-    "category": "competition",
-    "description": "Extended chase scenario between agents",
-    "segments": [
-      { "video": "stimuli/chasing3.mp4", "time": 1, "description": "Chase initiation", "start": 0, "end": 1 },
-      { "video": "stimuli/chasing3.mp4", "time": 2, "description": "Chase development", "start": 1, "end": 2 },
-      { "video": "stimuli/chasing3.mp4", "time": 3, "description": "Chase conclusion", "start": 2, "end": 3 }
-    ],
-    "times": [1, 2, 3],
-    "length": 3,
-    "goal": 2,
-    "statements": [
-      "The red agent believes the green agent is evading capture.",
-      "The green agent thinks the red agent is persistent.",
-      "Both agents believe they are in a competitive chase."
-    ]
-  },
-  {
-    "name": "teacher",
-    "video": "stimuli/teacher.mp4",
-    "category": "helping",
-    "description": "One agent teaching or guiding another",
-    "segments": [
-      { "video": "stimuli/teacher.mp4", "time": 1, "description": "Teaching begins", "start": 0, "end": 1 },
-      { "video": "stimuli/teacher.mp4", "time": 2, "description": "Learning process", "start": 1, "end": 2 },
-      { "video": "stimuli/teacher.mp4", "time": 3, "description": "Teaching completion", "start": 2, "end": 3 }
-    ],
-    "times": [1, 2, 3],
-    "length": 3,
-    "goal": 3,
-    "statements": [
-      "The red agent believes the green agent wants to learn.",
-      "The red agent thinks the green agent is knowledgeable.",
-      "Both agents believe in the value of education."
-    ]
-  },
-  {
-    "name": "informing",
-    "video": "stimuli/informing.mp4",
-    "category": "helping",
-    "description": "One agent providing information to another",
-    "segments": [
-      { "video": "stimuli/informing.mp4", "time": 1, "description": "Information sharing", "start": 0, "end": 1 },
-      { "video": "stimuli/informing.mp4", "time": 2, "description": "Information processing", "start": 1, "end": 2 },
-      { "video": "stimuli/informing.mp4", "time": 3, "description": "Information utilization", "start": 2, "end": 3 }
-    ],
-    "times": [1, 2, 3],
-    "length": 3,
-    "goal": 3,
-    "statements": [
-      "The red agent believes the green agent needs information.",
-      "The green agent thinks the red agent is helpful.",
-      "Both agents believe in the importance of communication."
-    ]
-  }
-] 
+    {
+      "name": "chasing",
+      "video": "stimuli/chasing.mp4",
+      "category": "competition",
+      "description": "One agent chasing another agent",
+      "segments": [
+        { "video": "stimuli/chasing.mp4", "time": 1, "description": "Chase begins", "start": 0, "end": 1 },
+        { "video": "stimuli/chasing.mp4", "time": 2, "description": "Chase continues", "start": 1, "end": 2 },
+        { "video": "stimuli/chasing.mp4", "time": 3, "description": "Chase resolution", "start": 2, "end": 3 }
+      ],
+      "times": [1, 2, 3],
+      "length": 3,
+      "goal": 2,
+      "statements": [
+        "The red agent believes the green agent is trying to escape.",
+        "The green agent thinks the red agent is pursuing them.",
+        "Both agents believe they are in a chase scenario."
+      ]
+    },
+    {
+      "name": "fighting",
+      "video": "stimuli/fighting.mp4",
+      "category": "competition",
+      "description": "Two agents engaged in physical conflict",
+      "segments": [
+        { "video": "stimuli/fighting.mp4", "time": 1, "description": "Conflict initiation", "start": 0, "end": 1 },
+        { "video": "stimuli/fighting.mp4", "time": 2, "description": "Fight escalates", "start": 1, "end": 2 },
+        { "video": "stimuli/fighting.mp4", "time": 3, "description": "Fight resolution", "start": 2, "end": 3 }
+      ],
+      "times": [1, 3, 7],
+      "length": 10,
+      "goal": 2,
+      "statements": [
+        "The red agent believes the green agent is hostile.",
+        "The green agent thinks the red agent is aggressive.",
+        "Both agents believe they must defend themselves."
+      ]
+    },
+    {
+      "name": "attacking",
+      "video": "stimuli/attacking.mp4",
+      "category": "hindering",
+      "description": "One agent actively attacking another",
+      "segments": [
+        { "video": "stimuli/attacking.mp4", "time": 1, "description": "Attack preparation", "start": 0, "end": 1 },
+        { "video": "stimuli/attacking.mp4", "time": 2, "description": "Attack execution", "start": 1, "end": 2 },
+        { "video": "stimuli/attacking.mp4", "time": 3, "description": "Attack completion", "start": 2, "end": 3 }
+      ],
+      "times": [1, 2, 3],
+      "length": 3,
+      "goal": 4,
+      "statements": [
+        "The red agent believes the green agent is vulnerable.",
+        "The green agent thinks the red agent is dangerous.",
+        "Both agents believe they are in a hostile situation."
+      ]
+    },
+    {
+      "name": "blocking_1",
+      "video": "stimuli/blocking_1.mp4",
+      "category": "hindering",
+      "description": "One agent blocking another's path or goal",
+      "segments": [
+        { "video": "stimuli/blocking_1.mp4", "time": 1, "description": "Path obstruction", "start": 0, "end": 1 },
+        { "video": "stimuli/blocking_1.mp4", "time": 2, "description": "Blocking continues", "start": 1, "end": 2 },
+        { "video": "stimuli/blocking_1.mp4", "time": 3, "description": "Blocking resolution", "start": 2, "end": 3 }
+      ],
+      "times": [1, 2, 3],
+      "length": 3,
+      "goal": 4,
+      "statements": [
+        "The red agent believes the green agent wants to pass.",
+        "The green agent thinks the red agent is obstructing.",
+        "Both agents believe there is a conflict of interest."
+      ]
+    },
+    {
+      "name": "helping_physically_2",
+      "video": "stimuli/helping_physically_2.mp4",
+      "category": "helping",
+      "description": "One agent physically helping another achieve a goal",
+      "segments": [
+        { "video": "stimuli/helping_physically_2.mp4", "time": 1, "description": "Recognition of need", "start": 0, "end": 1 },
+        { "video": "stimuli/helping_physically_2.mp4", "time": 2, "description": "Physical assistance", "start": 1, "end": 2 },
+        { "video": "stimuli/helping_physically_2.mp4", "time": 3, "description": "Goal achievement", "start": 2, "end": 3 }
+      ],
+      "times": [1, 2, 3],
+      "length": 3,
+      "goal": 3,
+      "statements": [
+        "The red agent believes the green agent needs help.",
+        "The green agent thinks the red agent is supportive.",
+        "Both agents believe in cooperation."
+      ]
+    },
+    {
+      "name": "hiding",
+      "video": "stimuli/hiding.mp4",
+      "category": "neutral",
+      "description": "One agent hiding from another",
+      "segments": [
+        { "video": "stimuli/hiding.mp4", "time": 1, "description": "Hiding behavior", "start": 0, "end": 1 },
+        { "video": "stimuli/hiding.mp4", "time": 2, "description": "Hiding continues", "start": 1, "end": 2 },
+        { "video": "stimuli/hiding.mp4", "time": 3, "description": "Hiding outcome", "start": 2, "end": 3 }
+      ],
+      "times": [1, 2, 3],
+      "length": 3,
+      "goal": 1,
+      "statements": [
+        "The red agent believes the green agent is searching.",
+        "The green agent thinks the red agent is hidden.",
+        "Both agents believe they are in a hide-and-seek scenario."
+      ]
+    },
+    {
+      "name": "stealing",
+      "video": "stimuli/stealing.mp4",
+      "category": "hindering",
+      "description": "One agent taking something from another",
+      "segments": [
+        { "video": "stimuli/stealing.mp4", "time": 1, "description": "Theft attempt", "start": 0, "end": 1 },
+        { "video": "stimuli/stealing.mp4", "time": 2, "description": "Theft execution", "start": 1, "end": 2 },
+        { "video": "stimuli/stealing.mp4", "time": 3, "description": "Theft completion", "start": 2, "end": 3 }
+      ],
+      "times": [1, 2, 3],
+      "length": 3,
+      "goal": 4,
+      "statements": [
+        "The red agent believes the green agent has something valuable.",
+        "The green agent thinks the red agent is a thief.",
+        "Both agents believe there is a conflict over resources."
+      ]
+    },
+    {
+      "name": "chasing3",
+      "video": "stimuli/chasing3.mp4",
+      "category": "competition",
+      "description": "Extended chase scenario between agents",
+      "segments": [
+        { "video": "stimuli/chasing3.mp4", "time": 1, "description": "Chase initiation", "start": 0, "end": 1 },
+        { "video": "stimuli/chasing3.mp4", "time": 2, "description": "Chase development", "start": 1, "end": 2 },
+        { "video": "stimuli/chasing3.mp4", "time": 3, "description": "Chase conclusion", "start": 2, "end": 3 }
+      ],
+      "times": [1, 2, 3],
+      "length": 3,
+      "goal": 2,
+      "statements": [
+        "The red agent believes the green agent is evading capture.",
+        "The green agent thinks the red agent is persistent.",
+        "Both agents believe they are in a competitive chase."
+      ]
+    },
+    {
+      "name": "teacher",
+      "video": "stimuli/teacher.mp4",
+      "category": "helping",
+      "description": "One agent teaching or guiding another",
+      "segments": [
+        { "video": "stimuli/teacher.mp4", "time": 1, "description": "Teaching begins", "start": 0, "end": 1 },
+        { "video": "stimuli/teacher.mp4", "time": 2, "description": "Learning process", "start": 1, "end": 2 },
+        { "video": "stimuli/teacher.mp4", "time": 3, "description": "Teaching completion", "start": 2, "end": 3 }
+      ],
+      "times": [1, 2, 3],
+      "length": 3,
+      "goal": 3,
+      "statements": [
+        "The red agent believes the green agent wants to learn.",
+        "The red agent thinks the green agent is knowledgeable.",
+        "Both agents believe in the value of education."
+      ]
+    },
+    {
+      "name": "informing",
+      "video": "stimuli/informing.mp4",
+      "category": "helping",
+      "description": "One agent providing information to another",
+      "segments": [
+        { "video": "stimuli/informing.mp4", "time": 1, "description": "Information sharing", "start": 0, "end": 1 },
+        { "video": "stimuli/informing.mp4", "time": 2, "description": "Information processing", "start": 1, "end": 2 },
+        { "video": "stimuli/informing.mp4", "time": 3, "description": "Information utilization", "start": 2, "end": 3 }
+      ],
+      "times": [1, 2, 3],
+      "length": 3,
+      "goal": 3,
+      "statements": [
+        "The red agent believes the green agent needs information.",
+        "The green agent thinks the red agent is helpful.",
+        "Both agents believe in the importance of communication."
+      ]
+    }
+  ] 
