@@ -29,12 +29,13 @@ experimentApp.controller('ExperimentController', function ExperimentController($
   $scope.user_id = Date.now();
 
   // --- State Management ---
-  $scope.section = "instructions"; // 'instructions', 'stimuli', 'endscreen'
+  $scope.section = "instructions"; // 'instructions', 'stimuli', 'behavioral_description', 'endscreen'
   $scope.inst_id = 0;
   $scope.stim_id = 0;
   $scope.part_id = 0;
   $scope.questionsVisible = false;
   $scope.show_repeat_warning = false;
+  $scope.behavioralDescription = ""; // Add this line
 
   // --- Quiz Data ---
   $scope.quiz = {
@@ -319,8 +320,9 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       if ($scope.part_id < currentStim.segments.length - 1) {
         $scope.part_id++;
     } else {
-        $scope.part_id = 0;
-        $scope.stim_id++;
+        // All segments completed - go to behavioral description
+        $scope.section = 'behavioral_description';
+        $scope.behavioralDescription = ""; // Reset description
       }
 
       if ($scope.stim_id >= $scope.stimuli_set.length) {
@@ -338,13 +340,88 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       if ($scope.part_id < currentStim.segments.length - 1) {
         $scope.part_id++;
       } else {
-        $scope.part_id = 0;
-        $scope.stim_id++;
+        // All segments completed - go to behavioral description
+        $scope.section = 'behavioral_description';
+        $scope.behavioralDescription = ""; // Reset description
       }
 
       if ($scope.stim_id >= $scope.stimuli_set.length) {
         $scope.section = 'endscreen';
       } else {
+        $timeout($scope.startSegmentPlayback, 100);
+      }
+    }
+  };
+
+  // New function to handle behavioral description submission
+  $scope.submitBehavioralDescription = function() {
+    console.log("DEBUG: submitBehavioralDescription called");
+    console.log("DEBUG: behavioralDescription value:", $scope.behavioralDescription);
+    console.log("DEBUG: behavioralDescription type:", typeof $scope.behavioralDescription);
+    console.log("DEBUG: behavioralDescription length:", $scope.behavioralDescription ? $scope.behavioralDescription.length : 'undefined');
+    console.log("DEBUG: behavioralDescription trimmed:", $scope.behavioralDescription ? $scope.behavioralDescription.trim() : 'undefined');
+    console.log("DEBUG: behavioralDescription trimmed length:", $scope.behavioralDescription ? $scope.behavioralDescription.trim().length : 'undefined');
+    
+    // Check if the textarea element has a value
+    const textarea = document.getElementById('behavioral-description');
+    if (textarea) {
+      console.log("DEBUG: textarea value:", textarea.value);
+      console.log("DEBUG: textarea value length:", textarea.value.length);
+    }
+    
+    // More robust validation - check both scope and DOM
+    const scopeValue = $scope.behavioralDescription;
+    const domValue = textarea ? textarea.value : '';
+    
+    if ((!scopeValue || typeof scopeValue !== 'string' || scopeValue.trim() === "") && 
+        (!domValue || domValue.trim() === "")) {
+      console.log("DEBUG: Validation failed - both scope and DOM values are empty");
+      alert("Please provide a description of what happened in the video.");
+      return;
+    }
+
+    // Use DOM value if scope value is empty
+    const finalValue = (scopeValue && scopeValue.trim() !== "") ? scopeValue.trim() : domValue.trim();
+    
+    console.log("DEBUG: Using final value:", finalValue);
+
+    try {
+      // Store behavioral description to Firebase
+      const setData = getFirebaseSet();
+      const ref = getFirebaseRef();
+      const database = getFirebaseDatabase();
+      
+      const path = `/${$scope.user_id}/${$scope.stimuli_set[$scope.stim_id].name}/behavioral_description`;
+      setData(ref(database, `results${path}`), {
+        description: finalValue,
+        timestamp: Date.now(),
+        video_name: $scope.stimuli_set[$scope.stim_id].name
+      }).then(() => {
+        console.log("Behavioral description saved to Firebase successfully");
+      }).catch((error) => {
+        console.error("Error saving behavioral description to Firebase:", error);
+      });
+
+      // Move to next video
+      $scope.part_id = 0;
+      $scope.stim_id++;
+      
+      if ($scope.stim_id >= $scope.stimuli_set.length) {
+        $scope.section = 'endscreen';
+      } else {
+        $scope.section = 'stimuli';
+        $timeout($scope.startSegmentPlayback, 100);
+      }
+    } catch (error) {
+      console.error("Firebase error in submitBehavioralDescription:", error);
+      // Continue with the experiment even if Firebase fails
+      $scope.part_id = 0;
+      $scope.stim_id++;
+      
+      if ($scope.stim_id >= $scope.stimuli_set.length) {
+        $scope.section = 'endscreen';
+      } else {
+        $scope.section = 'stimuli';
         $timeout($scope.startSegmentPlayback, 100);
       }
     }

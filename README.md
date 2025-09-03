@@ -1,11 +1,13 @@
 # Phase Interface - Agent Interaction Rating Experiment
 
-This is an experiment interface for rating agent interactions based on the `curr_belief` and `HRI` project structures. The interface presents video clips of agent interactions and collects ratings on a 0-100 scale.
+This is an experiment interface for rating agent interactions with behavioral descriptions. The interface presents segmented video clips of agent interactions and collects detailed ratings on goals, beliefs, and social relations.
 
 ## Features
 
-- **Video Presentation**: Displays 10 selected agent interaction videos
-- **Rating System**: 0-100 rating scale with slider and input options
+- **Segmented Video Presentation**: Displays videos in timed segments with questions after each
+- **Behavioral Description**: After each complete video, participants describe what happened
+- **Two-Panel Layout**: Video on left, questions on right to avoid scrolling
+- **Slider-Based Rating System**: 0-100 rating scales for goals, beliefs, and social relations
 - **Progress Tracking**: Visual progress bar showing completion status
 - **Firebase Integration**: Stores responses in Firebase Realtime Database
 - **Responsive Design**: Modern, clean interface optimized for user experience
@@ -16,13 +18,12 @@ This is an experiment interface for rating agent interactions based on the `curr
 phase_interface/
 ├── public/
 │   ├── stimuli/           # Video files and stimuli.json
+│   ├── data/             # Entity images and environment data
 │   ├── lib/              # JavaScript libraries
-│   ├── images/           # Image assets
 │   ├── index.html        # Main HTML file
 │   └── app.js            # AngularJS application logic
 ├── firebase.json         # Firebase hosting configuration
 ├── .firebaserc           # Firebase project configuration
-├── package.json          # Project dependencies
 └── README.md            # This file
 ```
 
@@ -47,7 +48,6 @@ The experiment includes 10 video clips covering various agent interaction types:
 
 - Node.js (v14 or higher)
 - Firebase CLI tools
-- Firebase project
 
 ### Installation
 
@@ -56,88 +56,66 @@ The experiment includes 10 video clips covering various agent interaction types:
    cd phase_interface
    ```
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Install Firebase CLI globally (if not already installed):**
+2. **Install Firebase CLI globally (if not already installed):**
    ```bash
    npm install -g firebase-tools
    ```
 
-4. **Login to Firebase:**
+3. **Login to Firebase:**
    ```bash
    firebase login
    ```
 
 ### Firebase Configuration
 
-1. **Update Firebase configuration in `app.js`:**
-   Replace the placeholder values in the `firebaseConfig` object with your actual Firebase project credentials:
-   ```javascript
-   const firebaseConfig = {
-     apiKey: "YOUR_ACTUAL_API_KEY",
-     authDomain: "YOUR_PROJECT.firebaseapp.com",
-     databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-     projectId: "YOUR_PROJECT_ID",
-     storageBucket: "YOUR_PROJECT.appspot.com",
-     messagingSenderId: "YOUR_SENDER_ID",
-     appId: "YOUR_APP_ID"
-   };
-   ```
-
-2. **Update project ID in `.firebaserc`:**
-   ```json
-   {
-     "projects": {
-       "default": "YOUR_ACTUAL_PROJECT_ID"
-     }
-   }
-   ```
-
-### Local Development
-
-1. **Start local development server:**
+1. **Initialize Firebase hosting:**
    ```bash
-   npm start
+   firebase init hosting
    ```
+   
+   When prompted:
+   - Public directory: `public`
+   - Single-page app: `No`
+   - GitHub integration: `No`
+   - Overwrite index.html: `No`
 
-2. **Open browser and navigate to:**
-   ```
-   http://localhost:5000
-   ```
+2. **Update Firebase configuration in `index.html`:**
+   The Firebase config is already set up in the HTML file.
 
 ### Deployment
 
-1. **Build the project:**
-   ```bash
-   npm run build
-   ```
+**Deploy to Firebase hosting:**
+```bash
+firebase deploy --only hosting
+```
 
-2. **Deploy to Firebase:**
-   ```bash
-   npm run deploy
-   ```
+**Start Firebase emulators for local development:**
+```bash
+firebase emulators:start
+```
 
 ## Usage
 
-1. **Instructions**: Users see an introduction explaining the experiment
-2. **Video Rating**: For each video, users:
-   - Watch the agent interaction
-   - Rate the level of cooperation on a 0-100 scale
-   - Use either the slider or input box
-   - Click "Next" to proceed
-3. **Completion**: Users see a thank you message and results are stored
+1. **Instructions & Tutorial**: Users complete 4 quizzes to learn about the interface
+2. **Video Segments**: For each video segment, users:
+   - Watch the segment
+   - Rate agent goals (landmarks, objects) on 0-100 certainty scales
+   - Rate social goals (helping/hindering) on 0-100 scales
+   - Rate relationship (adversarial/friendly) on 0-100 scale
+   - Rate realism on 0-100 scale
+3. **Behavioral Description**: After all segments, users:
+   - Watch the complete video
+   - Write a one-sentence description of what happened
+4. **Completion**: Results are stored in Firebase
 
 ## Data Collection
 
 The experiment collects:
 - User ID (timestamp-based)
-- Video ratings (0-100 scale)
+- Segment-by-segment ratings (goals, beliefs, social relations)
+- Behavioral descriptions for each video
 - Response timestamps
 - Total experiment duration
-- Stimulus information (name, category)
 
 Data is stored in Firebase Realtime Database under the user's ID.
 
@@ -146,46 +124,35 @@ Data is stored in Firebase Realtime Database under the user's ID.
 ### Adding More Videos
 
 1. Add video files to `public/stimuli/`
-2. Update `public/stimuli/stimuli.json` with new video information
+2. Update `public/stimuli/stimuli.json` with new video information and segment timestamps
 3. The interface will automatically load the new videos
+
+### Modifying Segment Timestamps
+
+Edit `public/stimuli/stimuli.json` to change when segments appear:
+```json
+"segments": [
+  { "start": 0, "end": 5 },
+  { "start": 5, "end": 15 },
+  { "start": 15, "end": 25 }
+]
+```
 
 ### Changing Rating Questions
 
-Modify the question text in `index.html`:
-```html
-<p class="question-text">How would you rate the level of cooperation between the agents in this interaction?</p>
-```
-
-### Modifying Rating Scale
-
-Update the scale labels and range in `index.html`:
-```html
-<span class="rating-label">0<br>No Cooperation</span>
-<input type="range" min="0" max="100" ng-model="currentRating" class="rating-slider">
-<span class="rating-label">100<br>Full Cooperation</span>
-```
+Modify the question text and rating scales in `index.html` within the question groups.
 
 ## Troubleshooting
 
 ### Common Issues
 
 1. **Videos not loading**: Check file paths in `stimuli.json`
-2. **Firebase connection errors**: Verify configuration in `app.js`
-3. **Local development issues**: Ensure Firebase CLI is properly installed
+2. **Firebase connection errors**: Verify configuration in `index.html`
+3. **Local development issues**: Use `firebase emulators:start`
 
 ### Debug Mode
 
-Add `?debug=true` to the URL to enable console logging:
-```
-http://localhost:5000?debug=true
-```
-
-### Local Testing
-
-Add `?local=true` to bypass Firebase and test locally:
-```
-http://localhost:5000?local=true
-```
+Check browser console for detailed logging of the experiment flow.
 
 ## License
 

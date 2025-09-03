@@ -6,21 +6,21 @@ The `phase_interface` allows you to control the exact timesteps where videos are
 ## How to Set Video Segment Timesteps
 
 ### Method 1: Update stimuli.json (Recommended)
-Edit the `public/stimuli/stimuli.json` file and modify the `times` array for each stimulus:
+Edit the `public/stimuli/stimuli.json` file and modify the `segments` array for each stimulus:
 
 ```json
 {
   "name": "fighting",
   "video": "stimuli/fighting.mp4",
   "segments": [
-    { "video": "stimuli/fighting.mp4", "time": 5, "description": "Segment 1 at 5s" },
-    { "video": "stimuli/fighting.mp4", "time": 15, "description": "Segment 2 at 15s" },
-    { "video": "stimuli/fighting.mp4", "time": 25, "description": "Segment 3 at 25s" }
-  ],
-  "times": [5, 15, 25],  // ← Update these timesteps
-  "length": 3
+    { "start": 0, "end": 5 },
+    { "start": 5, "end": 15 },
+    { "start": 15, "end": 25 }
+  ]
 }
 ```
+
+The `start` and `end` values represent seconds from the beginning of the video.
 
 ### Method 2: Use JavaScript Function (Programmatic)
 In the browser console or by calling the function in your code:
@@ -28,16 +28,16 @@ In the browser console or by calling the function in your code:
 ```javascript
 // Example: Update fighting video segments
 setVideoSegments(0, [
-  { video: "stimuli/fighting.mp4", time: 8, description: "Segment 1 at 8s" },
-  { video: "stimuli/fighting.mp4", time: 18, description: "Segment 2 at 18s" },
-  { video: "stimuli/fighting.mp4", time: 28, description: "Segment 3 at 28s" }
+  { start: 0, end: 8 },
+  { start: 8, end: 18 },
+  { start: 18, end: 28 }
 ]);
 
 // Example: Update chasing video segments  
 setVideoSegments(1, [
-  { video: "stimuli/chasing.mp4", time: 6, description: "Segment 1 at 6s" },
-  { video: "stimuli/chasing.mp4", time: 16, description: "Segment 2 at 16s" },
-  { video: "stimuli/chasing.mp4", time: 26, description: "Segment 3 at 26s" }
+  { start: 0, end: 6 },
+  { start: 6, end: 16 },
+  { start: 16, end: 26 }
 ]);
 ```
 
@@ -45,10 +45,10 @@ setVideoSegments(1, [
 
 Each video is divided into 3 segments where participants answer questions:
 
-1. **Segment 1** (part_id = 0): Goal questions
-2. **Segment 2** (part_id = 1): Belief questions  
-3. **Segment 3** (part_id = 2): Belief questions
-4. **Final Rating** (part_id = -1): Social interaction rating
+1. **Segment 1** (part_id = 0): Agent goals and beliefs
+2. **Segment 2** (part_id = 1): Agent goals and beliefs  
+3. **Segment 3** (part_id = 2): Agent goals and beliefs
+4. **Behavioral Description**: Complete video description after all segments
 
 ## Research Considerations
 
@@ -63,22 +63,23 @@ When choosing timesteps, consider:
 
 1. Watch each video and identify 3 key moments
 2. Note the timestamps (in seconds) for each moment
-3. Update the `times` array in `stimuli.json`
+3. Update the `segments` array in `stimuli.json` with `start` and `end` times
 4. Test the interface to ensure segments work correctly
 5. Adjust timestamps based on pilot testing
 
 ## Testing Your Changes
 
-1. Open the interface in your browser
-2. Complete the tutorial and quizzes
-3. Watch the first video and verify segments appear at correct times
-4. Check that questions appear after each segment
-5. Verify the final social rating question appears
+1. Deploy to Firebase: `firebase deploy --only hosting`
+2. Open the interface in your browser
+3. Complete the tutorial and quizzes
+4. Watch the first video and verify segments appear at correct times
+5. Check that questions appear after each segment
+6. Verify the behavioral description page appears after all segments
 
 ## Troubleshooting
 
 - **Videos not loading**: Check file paths in `stimuli.json`
-- **Segments not working**: Verify `times` array has correct values
+- **Segments not working**: Verify `segments` array has correct `start` and `end` values
 - **Questions not appearing**: Check `part_id` logic in app.js
 - **Console errors**: Look for JavaScript errors in browser developer tools
 
