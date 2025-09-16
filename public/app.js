@@ -36,6 +36,8 @@ experimentApp.controller('ExperimentController', function ExperimentController($
   $scope.questionsVisible = false;
   $scope.show_repeat_warning = false;
   $scope.behavioralDescription = ""; // Add this line
+  $scope.isTrial = false;
+  $scope.active_stimuli_set = [];
 
   // --- Quiz Data ---
   $scope.quiz = {
@@ -86,7 +88,7 @@ experimentApp.controller('ExperimentController', function ExperimentController($
     }
 
     if (correct) {
-        $scope.inst_id = 8;
+        $scope.inst_id = 9;
       $scope.show_repeat_warning = false;
     } else {
       $scope.show_repeat_warning = true;
@@ -114,7 +116,7 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       }
       
       if (correct) {
-          $scope.inst_id = 9;
+          $scope.inst_id = 10;
       $scope.show_repeat_warning = false;
     } else {
       $scope.show_repeat_warning = true;
@@ -142,7 +144,7 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       }
       
       if (correct) {
-          $scope.inst_id = 10;
+          $scope.inst_id = 11;
       $scope.show_repeat_warning = false;
     } else {
       $scope.show_repeat_warning = true;
@@ -170,7 +172,7 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       }
       
       if (correct) {
-          $scope.inst_id = 11;
+          $scope.inst_id = 12;
       $scope.show_repeat_warning = false;
     } else {
       $scope.show_repeat_warning = true;
@@ -206,18 +208,36 @@ experimentApp.controller('ExperimentController', function ExperimentController($
   $scope.reset_response = function() {
     console.log("DEBUG: reset_response called");
     $scope.response = {
-      // Red Agent (agent0) goals
-      agent0_landmark_goal: 0,
-      agent0_lm0_certainty: 0, agent0_lm1_certainty: 0, agent0_lm2_certainty: 0, agent0_lm3_certainty: 0,
-      agent0_object_goal: 0,
-      agent0_item0_certainty: 0, agent0_item1_certainty: 0,
+      // Red Agent (agent0) physical goal - combined options
+      agent0_goal_go_to_lm0: 50,
+      agent0_goal_go_to_lm1: 50,
+      agent0_goal_go_to_lm2: 50,
+      agent0_goal_go_to_lm3: 50,
+      agent0_goal_item0_to_lm0: 50,
+      agent0_goal_item0_to_lm1: 50,
+      agent0_goal_item0_to_lm2: 50,
+      agent0_goal_item0_to_lm3: 50,
+      agent0_goal_item1_to_lm0: 50,
+      agent0_goal_item1_to_lm1: 50,
+      agent0_goal_item1_to_lm2: 50,
+      agent0_goal_item1_to_lm3: 50,
+      agent0_goal_no_physical: 50,
       agent0_social_goal: 50, // Default to neutral
       
       // Green Agent (agent1) goals
-      agent1_landmark_goal: 0,
-      agent1_lm0_certainty: 0, agent1_lm1_certainty: 0, agent1_lm2_certainty: 0, agent1_lm3_certainty: 0,
-      agent1_object_goal: 0,
-      agent1_item0_certainty: 0, agent1_item1_certainty: 0,
+      agent1_goal_go_to_lm0: 50,
+      agent1_goal_go_to_lm1: 50,
+      agent1_goal_go_to_lm2: 50,
+      agent1_goal_go_to_lm3: 50,
+      agent1_goal_item0_to_lm0: 50,
+      agent1_goal_item0_to_lm1: 50,
+      agent1_goal_item0_to_lm2: 50,
+      agent1_goal_item0_to_lm3: 50,
+      agent1_goal_item1_to_lm0: 50,
+      agent1_goal_item1_to_lm1: 50,
+      agent1_goal_item1_to_lm2: 50,
+      agent1_goal_item1_to_lm3: 50,
+      agent1_goal_no_physical: 50,
       agent1_social_goal: 50, // Default to neutral
       
       // Overall ratings
@@ -226,18 +246,32 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       
       // Tracking variables for completion
       answered: {
-        agent0_landmark: false,
-        agent0_object: false,
+        agent0_physical: false,
         agent0_social: false,
-        agent1_landmark: false,
-        agent1_object: false,
+        agent1_physical: false,
         agent1_social: false,
         relationship: false,
         realism: false
       }
     };
+    $scope.answeredCount = 0;
     console.log("DEBUG: response set to:", $scope.response);
     console.log("DEBUG: answered flags:", $scope.response.answered);
+  };
+
+  // Recompute answered count
+  $scope.totalRequired = 6;
+  $scope.updateAnsweredCount = function() {
+    if (!$scope.response || !$scope.response.answered) { $scope.answeredCount = 0; return; }
+    const a = $scope.response.answered;
+    let count = 0;
+    count += a.agent0_physical ? 1 : 0;
+    count += a.agent0_social ? 1 : 0;
+    count += a.agent1_physical ? 1 : 0;
+    count += a.agent1_social ? 1 : 0;
+    count += a.relationship ? 1 : 0;
+    count += a.realism ? 1 : 0;
+    $scope.answeredCount = count;
   };
 
   $scope.init = function() {
@@ -246,6 +280,7 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       .then(response => response.json())
       .then(data => {
         $scope.stimuli_set = data;
+        $scope.active_stimuli_set = $scope.stimuli_set;
         $scope.$apply();
       }).catch(error => console.error("Error loading stimuli:", error));
     $scope.reset_response();
@@ -256,20 +291,40 @@ experimentApp.controller('ExperimentController', function ExperimentController($
     console.log(`DEBUG: markAnswered called with category: ${category}`);
     if ($scope.response && $scope.response.answered) {
       $scope.response.answered[category] = true;
+      $scope.updateAnsweredCount();
       console.log(`Marked ${category} as answered`);
       console.log("Current answered status:", $scope.response.answered);
     } else {
       console.error("ERROR: Cannot mark answered - response or answered object missing");
     }
   };
+
+  // Helper to mark an individual slider element as interacted (for styling)
+  $scope.markSliderElementInteracted = function($event) {
+    try {
+      const el = $event && $event.target;
+      if (el && el.classList) {
+        el.classList.add('slider-interacted');
+      }
+    } catch (e) {
+      console.warn('Could not mark slider as interacted:', e);
+    }
+  };
   
   $scope.startSegmentPlayback = function() {
+    // Ensure we're in the correct section and DOM is ready
+    if ($scope.section !== 'stimuli') { return; }
     const video = document.getElementById('stimuliVideo');
-    if (!$scope.stimuli_set[$scope.stim_id] || !$scope.stimuli_set[$scope.stim_id].segments[$scope.part_id]) {
+    if (!video) {
+        // DOM not ready yet; try again shortly only if still in stimuli
+        $timeout($scope.startSegmentPlayback, 100);
+        return;
+    }
+    if (!$scope.active_stimuli_set[$scope.stim_id] || !$scope.active_stimuli_set[$scope.stim_id].segments[$scope.part_id]) {
         console.error("Stimulus or segment not found!", $scope.stim_id, $scope.part_id);
         return;
     }
-    const segment = $scope.stimuli_set[$scope.stim_id].segments[$scope.part_id];
+    const segment = $scope.active_stimuli_set[$scope.stim_id].segments[$scope.part_id];
     
     video.currentTime = segment.start;
     video.play();
@@ -279,6 +334,20 @@ experimentApp.controller('ExperimentController', function ExperimentController($
         video.pause();
         video.removeEventListener('timeupdate', checkTime);
         $scope.$apply(() => { $scope.questionsVisible = true; });
+        // After questions are shown, bind an input listener to all sliders once
+        $timeout(() => {
+          try {
+            const sliders = document.querySelectorAll('.goal-slider');
+            sliders.forEach((el) => {
+              if (!el.dataset.boundInteraction) {
+                el.addEventListener('input', function() { this.classList.add('slider-interacted'); });
+                el.dataset.boundInteraction = '1';
+              }
+            });
+          } catch (e) {
+            console.warn('Unable to bind slider interaction listeners:', e);
+          }
+        }, 0);
       }
     };
     // Ensure no old listeners are attached
@@ -300,12 +369,13 @@ experimentApp.controller('ExperimentController', function ExperimentController($
   $scope.advance_stimuli = function() {
     try {
       // Store response to Firebase
-      const path = `/${$scope.user_id}/${$scope.stimuli_set[$scope.stim_id].name}/segment_${$scope.part_id}`;
+      const collection = $scope.isTrial ? 'trial' : 'results';
+      const path = `/${$scope.user_id}/${$scope.active_stimuli_set[$scope.stim_id].name}/segment_${$scope.part_id}`;
       const setData = getFirebaseSet();
       const ref = getFirebaseRef();
       const database = getFirebaseDatabase();
       
-      setData(ref(database, `results${path}`), $scope.response)
+      setData(ref(database, `${collection}${path}`), $scope.response)
         .then(() => {
           console.log("Data saved to Firebase successfully");
         })
@@ -316,16 +386,24 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       $scope.reset_response();
       $scope.questionsVisible = false;
 
-      const currentStim = $scope.stimuli_set[$scope.stim_id];
+      const currentStim = $scope.active_stimuli_set[$scope.stim_id];
       if ($scope.part_id < currentStim.segments.length - 1) {
         $scope.part_id++;
     } else {
-        // All segments completed - go to behavioral description
-        $scope.section = 'behavioral_description';
-        $scope.behavioralDescription = ""; // Reset description
+        if ($scope.isTrial) {
+          // End trial and proceed to Quiz 1
+          $scope.section = 'instructions';
+          $scope.inst_id = 8; // Quiz 1 screen
+          $scope.isTrial = false;
+          $scope.active_stimuli_set = $scope.stimuli_set;
+        } else {
+          // All segments completed - go to behavioral description
+          $scope.section = 'behavioral_description';
+          $scope.behavioralDescription = ""; // Reset description
+        }
       }
 
-      if ($scope.stim_id >= $scope.stimuli_set.length) {
+      if ($scope.stim_id >= $scope.active_stimuli_set.length) {
         $scope.section = 'endscreen';
       } else {
         $timeout($scope.startSegmentPlayback, 100);
@@ -336,16 +414,22 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       $scope.reset_response();
       $scope.questionsVisible = false;
 
-      const currentStim = $scope.stimuli_set[$scope.stim_id];
+      const currentStim = $scope.active_stimuli_set[$scope.stim_id];
       if ($scope.part_id < currentStim.segments.length - 1) {
         $scope.part_id++;
       } else {
-        // All segments completed - go to behavioral description
-        $scope.section = 'behavioral_description';
-        $scope.behavioralDescription = ""; // Reset description
+        if ($scope.isTrial) {
+          $scope.section = 'instructions';
+          $scope.inst_id = 8; // Quiz 1 screen
+          $scope.isTrial = false;
+          $scope.active_stimuli_set = $scope.stimuli_set;
+        } else {
+          $scope.section = 'behavioral_description';
+          $scope.behavioralDescription = ""; // Reset description
+        }
       }
 
-      if ($scope.stim_id >= $scope.stimuli_set.length) {
+      if ($scope.stim_id >= $scope.active_stimuli_set.length) {
         $scope.section = 'endscreen';
       } else {
         $timeout($scope.startSegmentPlayback, 100);
@@ -353,83 +437,49 @@ experimentApp.controller('ExperimentController', function ExperimentController($
     }
   };
 
-  // New function to handle behavioral description submission
   $scope.submitBehavioralDescription = function() {
-    console.log("DEBUG: submitBehavioralDescription called");
-    console.log("DEBUG: behavioralDescription value:", $scope.behavioralDescription);
-    console.log("DEBUG: behavioralDescription type:", typeof $scope.behavioralDescription);
-    console.log("DEBUG: behavioralDescription length:", $scope.behavioralDescription ? $scope.behavioralDescription.length : 'undefined');
-    console.log("DEBUG: behavioralDescription trimmed:", $scope.behavioralDescription ? $scope.behavioralDescription.trim() : 'undefined');
-    console.log("DEBUG: behavioralDescription trimmed length:", $scope.behavioralDescription ? $scope.behavioralDescription.trim().length : 'undefined');
-    
-    // Check if the textarea element has a value
-    const textarea = document.getElementById('behavioral-description');
-    if (textarea) {
-      console.log("DEBUG: textarea value:", textarea.value);
-      console.log("DEBUG: textarea value length:", textarea.value.length);
-    }
-    
-    // More robust validation - check both scope and DOM
-    const scopeValue = $scope.behavioralDescription;
-    const domValue = textarea ? textarea.value : '';
-    
-    if ((!scopeValue || typeof scopeValue !== 'string' || scopeValue.trim() === "") && 
-        (!domValue || domValue.trim() === "")) {
-      console.log("DEBUG: Validation failed - both scope and DOM values are empty");
-      alert("Please provide a description of what happened in the video.");
+    if (!$scope.behavioralDescription) {
+      alert("Please provide a description.");
       return;
     }
 
-    // Use DOM value if scope value is empty
-    const finalValue = (scopeValue && scopeValue.trim() !== "") ? scopeValue.trim() : domValue.trim();
-    
-    console.log("DEBUG: Using final value:", finalValue);
-
     try {
-      // Store behavioral description to Firebase
       const setData = getFirebaseSet();
       const ref = getFirebaseRef();
       const database = getFirebaseDatabase();
       
-      const path = `/${$scope.user_id}/${$scope.stimuli_set[$scope.stim_id].name}/behavioral_description`;
-      setData(ref(database, `results${path}`), {
-        description: finalValue,
-        timestamp: Date.now(),
-        video_name: $scope.stimuli_set[$scope.stim_id].name
+      setData(ref(database, `results/${$scope.user_id}/behavioral_description`), {
+        description: $scope.behavioralDescription,
+        timestamp: Date.now()
       }).then(() => {
         console.log("Behavioral description saved to Firebase successfully");
+        $scope.section = 'endscreen'; // Go to endscreen after saving
       }).catch((error) => {
         console.error("Error saving behavioral description to Firebase:", error);
       });
-
-      // Move to next video
-      $scope.part_id = 0;
-      $scope.stim_id++;
-      
-      if ($scope.stim_id >= $scope.stimuli_set.length) {
-        $scope.section = 'endscreen';
-      } else {
-        $scope.section = 'stimuli';
-        $timeout($scope.startSegmentPlayback, 100);
-      }
     } catch (error) {
       console.error("Firebase error in submitBehavioralDescription:", error);
-      // Continue with the experiment even if Firebase fails
-      $scope.part_id = 0;
-      $scope.stim_id++;
-      
-      if ($scope.stim_id >= $scope.stimuli_set.length) {
-        $scope.section = 'endscreen';
-      } else {
-        $scope.section = 'stimuli';
-        $timeout($scope.startSegmentPlayback, 100);
-      }
     }
   };
 
   $scope.hasMoreSegments = function() {
-    if (!$scope.stimuli_set[$scope.stim_id]) return false;
-    return $scope.part_id < $scope.stimuli_set[$scope.stim_id].segments.length - 1;
+    if (!$scope.active_stimuli_set[$scope.stim_id]) return false;
+    return $scope.part_id < $scope.active_stimuli_set[$scope.stim_id].segments.length - 1;
+  };
+
+  $scope.startTrialRun = function() {
+    // Pick a simple 2-3 segment stimulus (e.g., 'helping')
+    const pickName = 'helping';
+    const stim = ($scope.stimuli_set || []).find(s => s.name === pickName) || $scope.stimuli_set[0];
+    if (!stim) { alert('Trial stimulus not found.'); return; }
+    $scope.isTrial = true;
+    $scope.active_stimuli_set = [stim];
+    $scope.stim_id = 0;
+    $scope.part_id = 0;
+    $scope.section = 'stimuli';
+    $scope.questionsVisible = false;
+    $scope.reset_response();
+    $timeout($scope.startSegmentPlayback, 500);
   };
   
   // ==========================================================
@@ -445,11 +495,9 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       }
 
       // Check if all required questions have been answered
-      const allAnswered = $scope.response.answered.agent0_landmark && 
-                         $scope.response.answered.agent0_object && 
+      const allAnswered = $scope.response.answered.agent0_physical && 
                          $scope.response.answered.agent0_social && 
-                         $scope.response.answered.agent1_landmark && 
-                         $scope.response.answered.agent1_object && 
+                         $scope.response.answered.agent1_physical && 
                          $scope.response.answered.agent1_social && 
                          $scope.response.answered.relationship && 
                          $scope.response.answered.realism;

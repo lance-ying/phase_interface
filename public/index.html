@@ -260,26 +260,33 @@
         -webkit-appearance: none;
     }
     
+    /* Default thumb: gray until interaction */
     .goal-slider::-webkit-slider-thumb {
         -webkit-appearance: none;
         appearance: none;
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background: var(--primary-accent);
+        background: #bdc3c7;
         cursor: pointer;
         box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        transition: background 0.2s ease;
     }
     
     .goal-slider::-moz-range-thumb {
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background: var(--primary-accent);
+        background: #bdc3c7;
         cursor: pointer;
         border: none;
         box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        transition: background 0.2s ease;
     }
+    
+    /* After interaction: blue */
+    .goal-slider.slider-interacted::-webkit-slider-thumb { background: var(--primary-accent); }
+    .goal-slider.slider-interacted::-moz-range-thumb { background: var(--primary-accent); }
     
     .slider-value {
         min-width: 50px;
@@ -388,7 +395,23 @@
         Incorrect. Please review the instructions carefully and try the quiz again.
       </div>
 
-      <div ng-if="inst_id === 7" class="quiz-question">
+      <div ng-if="inst_id === 7" class="panel">
+        <div class="panel-heading"><h4>Practice Round</h4></div>
+        <div class="panel-body">
+          <p>This short practice round shows exactly what you will do in the main experiment.</p>
+          <ol>
+            <li>Watch a short video with multiple segments.</li>
+            <li>After each segment, answer questions about each agent's goals and relationship.</li>
+            <li>You can replay the current segment if needed.</li>
+          </ol>
+          <p>Click Start Practice to begin. After the practice, you will proceed to Quiz 1.</p>
+          <div class="controls">
+            <button class="button" ng-click="startTrialRun()">Start Practice ▶</button>
+          </div>
+        </div>
+      </div>
+
+      <div ng-if="inst_id === 8" class="quiz-question">
           <p style="font-weight: bold; font-size: 22px; text-align:center; margin-bottom: 20px;">Quiz 1: Knowledge</p>
           <div class="instruction-video"><img src="data/entities/quiz_fov.png" class="instruction-image"></div>
           <div style="display: flex; justify-content: center; gap: 40px; text-align: left;">
@@ -405,7 +428,7 @@
           </div>
           <div class="controls"><button class="button" ng-click="submitQuiz1()">Submit</button></div>
         </div>
-        <div ng-if="inst_id === 8" class="quiz-question">
+        <div ng-if="inst_id === 9" class="quiz-question">
             <p style="font-weight: bold; font-size: 22px; text-align:center; margin-bottom: 20px;">Quiz 2: Goals</p>
             <div class="instruction-video"><video class="instruction-image" controls><source src="data/entities/personal_goal_quiz.mp4"></video></div>
             <p style="text-align:center;"><b>What is <img src="data/entities/agent0.png" style="width:25px;">'s personal goal?</b></p>
@@ -417,7 +440,7 @@
             </ul>
              <div class="controls"><button class="button" ng-click="submitQuiz2()">Submit</button></div>
         </div>
-        <div ng-if="inst_id === 9" class="quiz-question">
+        <div ng-if="inst_id === 10" class="quiz-question">
             <p style="font-weight: bold; font-size: 22px; text-align:center; margin-bottom: 20px;">Quiz 3: Relations</p>
             <div class="instruction-video"><video class="instruction-image" controls><source src="data/entities/helping_quiz2.mp4"></video></div>
             <p style="text-align:center;"><b>What is <img src="data/entities/agent0.png" style="width:25px;">'s social goal?</b></p>
@@ -427,7 +450,7 @@
             </ul>
             <div class="controls"><button class="button" ng-click="submitQuiz3()">Submit</button></div>
         </div>
-        <div ng-if="inst_id === 10" class="quiz-question">
+        <div ng-if="inst_id === 11" class="quiz-question">
             <p style="font-weight: bold; font-size: 22px; text-align:center; margin-bottom: 20px;">Quiz 4: Strength</p>
             <div class="instruction-video"><video class="instruction-image" controls><source src="data/entities/quiz3.mp4"></video></div>
             <p style="text-align:center;"><b>Which creature is stronger?</b></p>
@@ -439,7 +462,7 @@
             <div class="controls"><button class="button" ng-click="submitQuiz4()">Submit</button></div>
         </div>
       
-       <div ng-if="inst_id === 11" class="quiz-section" style="text-align:center;">
+       <div ng-if="inst_id === 12" class="quiz-section" style="text-align:center;">
             <h3><strong>Congratulations!</strong></h3>
             <p>You answered all quiz questions correctly. Great job!</p>
             <p>You will now start the main experiment.</p>
@@ -462,9 +485,9 @@
             <div class="progress-fill" ng-style="{'width': ((stim_id + 1) / stimuli_set.length * 100) + '%'}"></div>
           </div>
           <div class="video-container">
-            <video id="stimuliVideo" class="video-player" ng-src="{{stimuli_set[stim_id].video}}" muted></video>
-            <div class="segment-info" ng-if="stimuli_set[stim_id]">
-              Segment {{part_id + 1}} of {{stimuli_set[stim_id].segments.length}}
+            <video id="stimuliVideo" class="video-player" ng-src="{{active_stimuli_set[stim_id].video}}" muted></video>
+            <div class="segment-info" ng-if="active_stimuli_set[stim_id]">
+              <span ng-if="isTrial">Trial • </span>Segment {{part_id + 1}} of {{active_stimuli_set[stim_id].segments.length}}
             </div>
           </div>
           <div class="controls" style="margin-top: 20px;">
@@ -483,7 +506,7 @@
                   <div class="question-title">What is <img src="data/entities/agent0.png" style="width:25px; vertical-align: middle;">'s goal?</div>
                   
                   <div class="goal-block">
-                      <div class="goal-block-title">Physical Goal: Go to Landmark</div>
+                      <div class="goal-block-title">Physical Goal</div>
                       <div class="slider-container">
                           <div class="slider-labels">
                               <span>0% Definitely No</span>
@@ -492,62 +515,75 @@
                           </div>
                           <div class="slider-group">
                               <label class="slider-option">
-                                  <span class="option-text">Blue landmark <img src="data/entities/lm0.png" style="width:20px; vertical-align: middle;"></span>
-                                  <input type="range" min="0" max="100" ng-model="response.agent0_lm0_certainty" class="goal-slider" ng-change="markAnswered('agent0_landmark')">
-                                  <span class="slider-value">{{response.agent0_lm0_certainty || 0}}%</span>
+                                  <span class="option-text">Go to blue landmark <img src="data/entities/lm0.png" style="width:20px; vertical-align: middle;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent0_goal_go_to_lm0" class="goal-slider" ng-change="markAnswered('agent0_physical')">
+                                  <span class="slider-value">{{response.agent0_goal_go_to_lm0 || 0}}%</span>
                               </label>
                               <label class="slider-option">
-                                  <span class="option-text">Green landmark <img src="data/entities/lm1.png" style="width:20px; vertical-align: middle;"></span>
-                                  <input type="range" min="0" max="100" ng-model="response.agent0_lm1_certainty" class="goal-slider" ng-change="markAnswered('agent0_landmark')">
-                                  <span class="slider-value">{{response.agent0_lm1_certainty || 0}}%</span>
+                                  <span class="option-text">Go to green landmark <img src="data/entities/lm1.png" style="width:20px; vertical-align: middle;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent0_goal_go_to_lm1" class="goal-slider" ng-change="markAnswered('agent0_physical')">
+                                  <span class="slider-value">{{response.agent0_goal_go_to_lm1 || 0}}%</span>
                               </label>
                               <label class="slider-option">
-                                  <span class="option-text">Red landmark <img src="data/entities/lm2.png" style="width:20px; vertical-align: middle;"></span>
-                                  <input type="range" min="0" max="100" ng-model="response.agent0_lm2_certainty" class="goal-slider" ng-change="markAnswered('agent0_landmark')">
-                                  <span class="slider-value">{{response.agent0_lm2_certainty || 0}}%</span>
+                                  <span class="option-text">Go to red landmark <img src="data/entities/lm2.png" style="width:20px; vertical-align: middle;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent0_goal_go_to_lm2" class="goal-slider" ng-change="markAnswered('agent0_physical')">
+                                  <span class="slider-value">{{response.agent0_goal_go_to_lm2 || 0}}%</span>
                               </label>
                               <label class="slider-option">
-                                  <span class="option-text">Yellow landmark <img src="data/entities/lm3.png" style="width:20px; vertical-align: middle;"></span>
-                                  <input type="range" min="0" max="100" ng-model="response.agent0_lm3_certainty" class="goal-slider" ng-change="markAnswered('agent0_landmark')">
-                                  <span class="slider-value">{{response.agent0_lm3_certainty || 0}}%</span>
+                                  <span class="option-text">Go to yellow landmark <img src="data/entities/lm3.png" style="width:20px; vertical-align: middle;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent0_goal_go_to_lm3" class="goal-slider" ng-change="markAnswered('agent0_physical')">
+                                  <span class="slider-value">{{response.agent0_goal_go_to_lm3 || 0}}%</span>
+                              </label>
+                          </div>
+                          <div class="goal-block-title" style="margin-top:10px;">Move object to landmark</div>
+                          <div class="slider-group">
+                              <label class="slider-option">
+                                  <span class="option-text">Move blue object to blue landmark <img src="data/entities/item0.png" style="width:20px;">→<img src="data/entities/lm0.png" style="width:20px;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent0_goal_item0_to_lm0" class="goal-slider" ng-change="markAnswered('agent0_physical')">
+                                  <span class="slider-value">{{response.agent0_goal_item0_to_lm0 || 0}}%</span>
+                              </label>
+                              <label class="slider-option">
+                                  <span class="option-text">Move blue object to green landmark <img src="data/entities/item0.png" style="width:20px;">→<img src="data/entities/lm1.png" style="width:20px;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent0_goal_item0_to_lm1" class="goal-slider" ng-change="markAnswered('agent0_physical')">
+                                  <span class="slider-value">{{response.agent0_goal_item0_to_lm1 || 0}}%</span>
+                              </label>
+                              <label class="slider-option">
+                                  <span class="option-text">Move blue object to red landmark <img src="data/entities/item0.png" style="width:20px;">→<img src="data/entities/lm2.png" style="width:20px;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent0_goal_item0_to_lm2" class="goal-slider" ng-change="markAnswered('agent0_physical')">
+                                  <span class="slider-value">{{response.agent0_goal_item0_to_lm2 || 0}}%</span>
+                              </label>
+                              <label class="slider-option">
+                                  <span class="option-text">Move blue object to yellow landmark <img src="data/entities/item0.png" style="width:20px;">→<img src="data/entities/lm3.png" style="width:20px;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent0_goal_item0_to_lm3" class="goal-slider" ng-change="markAnswered('agent0_physical')">
+                                  <span class="slider-value">{{response.agent0_goal_item0_to_lm3 || 0}}%</span>
+                              </label>
+                              <label class="slider-option">
+                                  <span class="option-text">Move pink object to blue landmark <img src="data/entities/item1.png" style="width:20px;">→<img src="data/entities/lm0.png" style="width:20px;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent0_goal_item1_to_lm0" class="goal-slider" ng-change="markAnswered('agent0_physical')">
+                                  <span class="slider-value">{{response.agent0_goal_item1_to_lm0 || 0}}%</span>
+                              </label>
+                              <label class="slider-option">
+                                  <span class="option-text">Move pink object to green landmark <img src="data/entities/item1.png" style="width:20px;">→<img src="data/entities/lm1.png" style="width:20px;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent0_goal_item1_to_lm1" class="goal-slider" ng-change="markAnswered('agent0_physical')">
+                                  <span class="slider-value">{{response.agent0_goal_item1_to_lm1 || 0}}%</span>
+                              </label>
+                              <label class="slider-option">
+                                  <span class="option-text">Move pink object to red landmark <img src="data/entities/item1.png" style="width:20px;">→<img src="data/entities/lm2.png" style="width:20px;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent0_goal_item1_to_lm2" class="goal-slider" ng-change="markAnswered('agent0_physical')">
+                                  <span class="slider-value">{{response.agent0_goal_item1_to_lm2 || 0}}%</span>
+                              </label>
+                              <label class="slider-option">
+                                  <span class="option-text">Move pink object to yellow landmark <img src="data/entities/item1.png" style="width:20px;">→<img src="data/entities/lm3.png" style="width:20px;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent0_goal_item1_to_lm3" class="goal-slider" ng-change="markAnswered('agent0_physical')">
+                                  <span class="slider-value">{{response.agent0_goal_item1_to_lm3 || 0}}%</span>
                               </label>
                           </div>
                           <div class="slider-group">
                               <label class="slider-option">
-                                  <span class="option-text">No landmark goal</span>
-                                  <input type="range" min="0" max="100" ng-model="response.agent0_landmark_goal" class="goal-slider" ng-change="markAnswered('agent0_landmark')">
-                                  <span class="slider-value">{{response.agent0_landmark_goal || 0}}%</span>
+                                  <span class="option-text">No physical goal</span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent0_goal_no_physical" class="goal-slider" ng-change="markAnswered('agent0_physical')">
+                                  <span class="slider-value">{{response.agent0_goal_no_physical || 0}}%</span>
                               </label>
-                          </div>
-                      </div>
-                      
-                      <div class="goal-block">
-                          <div class="goal-block-title">Physical Goal: Get Object</div>
-                          <div class="slider-container">
-                              <div class="slider-labels">
-                                  <span>0% Definitely No</span>
-                                  <span>50% Unsure</span>
-                                  <span>100% Definitely Yes</span>
-                              </div>
-                              <div class="slider-group">
-                                  <label class="slider-option">
-                                      <span class="option-text">Blue object <img src="data/entities/item0.png" style="width:20px; vertical-align: middle;"></span>
-                                      <input type="range" min="0" max="100" ng-model="response.agent0_item0_certainty" class="goal-slider" ng-change="markAnswered('agent0_object')">
-                                      <span class="slider-value">{{response.agent0_item0_certainty || 0}}%</span>
-                                  </label>
-                                  <label class="slider-option">
-                                      <span class="option-text">Pink object <img src="data/entities/item1.png" style="width:20px; vertical-align: middle;"></span>
-                                      <input type="range" min="0" max="100" ng-model="response.agent0_item1_certainty" class="goal-slider" ng-change="markAnswered('agent0_object')">
-                                      <span class="slider-value">{{response.agent0_item1_certainty || 0}}%</span>
-                                  </label>
-                              </div>
-                              <div class="slider-group">
-                                  <label class="slider-option">
-                                      <span class="option-text">No object goal</span>
-                                      <input type="range" min="0" max="100" ng-model="response.agent0_object_goal" class="goal-slider" ng-change="markAnswered('agent0_object')">
-                                      <span class="slider-value">{{response.agent0_object_goal || 0}}%</span>
-                                  </label>
-                              </div>
                           </div>
                       </div>
                   </div>
@@ -570,7 +606,7 @@
                   <div class="question-title">What is <img src="data/entities/agent1.png" style="width:25px; vertical-align: middle;">'s goal?</div>
                   
                   <div class="goal-block">
-                      <div class="goal-block-title">Physical Goal: Go to Landmark</div>
+                      <div class="goal-block-title">Physical Goal</div>
                       <div class="slider-container">
                           <div class="slider-labels">
                             <span>0% Definitely No</span>
@@ -579,62 +615,75 @@
                           </div>
                           <div class="slider-group">
                               <label class="slider-option">
-                                  <span class="option-text">Blue landmark <img src="data/entities/lm0.png" style="width:20px; vertical-align: middle;"></span>
-                                  <input type="range" min="0" max="100" ng-model="response.agent1_lm0_certainty" class="goal-slider" ng-change="markAnswered('agent1_landmark')">
-                                  <span class="slider-value">{{response.agent1_lm0_certainty || 0}}%</span>
+                                  <span class="option-text">Go to blue landmark <img src="data/entities/lm0.png" style="width:20px; vertical-align: middle;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent1_goal_go_to_lm0" class="goal-slider" ng-change="markAnswered('agent1_physical')">
+                                  <span class="slider-value">{{response.agent1_goal_go_to_lm0 || 0}}%</span>
                               </label>
                               <label class="slider-option">
-                                  <span class="option-text">Green landmark <img src="data/entities/lm1.png" style="width:20px; vertical-align: middle;"></span>
-                                  <input type="range" min="0" max="100" ng-model="response.agent1_lm1_certainty" class="goal-slider" ng-change="markAnswered('agent1_landmark')">
-                                  <span class="slider-value">{{response.agent1_lm1_certainty || 0}}%</span>
+                                  <span class="option-text">Go to green landmark <img src="data/entities/lm1.png" style="width:20px; vertical-align: middle;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent1_goal_go_to_lm1" class="goal-slider" ng-change="markAnswered('agent1_physical')">
+                                  <span class="slider-value">{{response.agent1_goal_go_to_lm1 || 0}}%</span>
                               </label>
                               <label class="slider-option">
-                                  <span class="option-text">Red landmark <img src="data/entities/lm2.png" style="width:20px; vertical-align: middle;"></span>
-                                  <input type="range" min="0" max="100" ng-model="response.agent1_lm2_certainty" class="goal-slider" ng-change="markAnswered('agent1_landmark')">
-                                  <span class="slider-value">{{response.agent1_lm2_certainty || 0}}%</span>
+                                  <span class="option-text">Go to red landmark <img src="data/entities/lm2.png" style="width:20px; vertical-align: middle;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent1_goal_go_to_lm2" class="goal-slider" ng-change="markAnswered('agent1_physical')">
+                                  <span class="slider-value">{{response.agent1_goal_go_to_lm2 || 0}}%</span>
                               </label>
                               <label class="slider-option">
-                                  <span class="option-text">Yellow landmark <img src="data/entities/lm3.png" style="width:20px; vertical-align: middle;"></span>
-                                  <input type="range" min="0" max="100" ng-model="response.agent1_lm3_certainty" class="goal-slider" ng-change="markAnswered('agent1_landmark')">
-                                  <span class="slider-value">{{response.agent1_lm3_certainty || 0}}%</span>
+                                  <span class="option-text">Go to yellow landmark <img src="data/entities/lm3.png" style="width:20px; vertical-align: middle;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent1_goal_go_to_lm3" class="goal-slider" ng-change="markAnswered('agent1_physical')">
+                                  <span class="slider-value">{{response.agent1_goal_go_to_lm3 || 0}}%</span>
+                              </label>
+                          </div>
+                          <div class="goal-block-title" style="margin-top:10px;">Move object to landmark</div>
+                          <div class="slider-group">
+                              <label class="slider-option">
+                                  <span class="option-text">Move blue object to blue landmark <img src="data/entities/item0.png" style="width:20px;">→<img src="data/entities/lm0.png" style="width:20px;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent1_goal_item0_to_lm0" class="goal-slider" ng-change="markAnswered('agent1_physical')">
+                                  <span class="slider-value">{{response.agent1_goal_item0_to_lm0 || 0}}%</span>
+                              </label>
+                              <label class="slider-option">
+                                  <span class="option-text">Move blue object to green landmark <img src="data/entities/item0.png" style="width:20px;">→<img src="data/entities/lm1.png" style="width:20px;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent1_goal_item0_to_lm1" class="goal-slider" ng-change="markAnswered('agent1_physical')">
+                                  <span class="slider-value">{{response.agent1_goal_item0_to_lm1 || 0}}%</span>
+                              </label>
+                              <label class="slider-option">
+                                  <span class="option-text">Move blue object to red landmark <img src="data/entities/item0.png" style="width:20px;">→<img src="data/entities/lm2.png" style="width:20px;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent1_goal_item0_to_lm2" class="goal-slider" ng-change="markAnswered('agent1_physical')">
+                                  <span class="slider-value">{{response.agent1_goal_item0_to_lm2 || 0}}%</span>
+                              </label>
+                              <label class="slider-option">
+                                  <span class="option-text">Move blue object to yellow landmark <img src="data/entities/item0.png" style="width:20px;">→<img src="data/entities/lm3.png" style="width:20px;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent1_goal_item0_to_lm3" class="goal-slider" ng-change="markAnswered('agent1_physical')">
+                                  <span class="slider-value">{{response.agent1_goal_item0_to_lm3 || 0}}%</span>
+                              </label>
+                              <label class="slider-option">
+                                  <span class="option-text">Move pink object to blue landmark <img src="data/entities/item1.png" style="width:20px;">→<img src="data/entities/lm0.png" style="width:20px;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent1_goal_item1_to_lm0" class="goal-slider" ng-change="markAnswered('agent1_physical')">
+                                  <span class="slider-value">{{response.agent1_goal_item1_to_lm0 || 0}}%</span>
+                              </label>
+                              <label class="slider-option">
+                                  <span class="option-text">Move pink object to green landmark <img src="data/entities/item1.png" style="width:20px;">→<img src="data/entities/lm1.png" style="width:20px;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent1_goal_item1_to_lm1" class="goal-slider" ng-change="markAnswered('agent1_physical')">
+                                  <span class="slider-value">{{response.agent1_goal_item1_to_lm1 || 0}}%</span>
+                              </label>
+                              <label class="slider-option">
+                                  <span class="option-text">Move pink object to red landmark <img src="data/entities/item1.png" style="width:20px;">→<img src="data/entities/lm2.png" style="width:20px;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent1_goal_item1_to_lm2" class="goal-slider" ng-change="markAnswered('agent1_physical')">
+                                  <span class="slider-value">{{response.agent1_goal_item1_to_lm2 || 0}}%</span>
+                              </label>
+                              <label class="slider-option">
+                                  <span class="option-text">Move pink object to yellow landmark <img src="data/entities/item1.png" style="width:20px;">→<img src="data/entities/lm3.png" style="width:20px;"></span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent1_goal_item1_to_lm3" class="goal-slider" ng-change="markAnswered('agent1_physical')">
+                                  <span class="slider-value">{{response.agent1_goal_item1_to_lm3 || 0}}%</span>
                               </label>
                           </div>
                           <div class="slider-group">
                               <label class="slider-option">
-                                  <span class="option-text">No landmark goal</span>
-                                  <input type="range" min="0" max="100" ng-model="response.agent1_landmark_goal" class="goal-slider" ng-change="markAnswered('agent1_landmark')">
-                                  <span class="slider-value">{{response.agent1_landmark_goal || 0}}%</span>
+                                  <span class="option-text">No physical goal</span>
+                                  <input type="range" min="0" max="100" ng-model="response.agent1_goal_no_physical" class="goal-slider" ng-change="markAnswered('agent1_physical')">
+                                  <span class="slider-value">{{response.agent1_goal_no_physical || 0}}%</span>
                               </label>
-                          </div>
-                      </div>
-                      
-                      <div class="goal-block">
-                          <div class="goal-block-title">Physical Goal: Get Object</div>
-                          <div class="slider-container">
-                              <div class="slider-labels">
-                                <span>0% Definitely No</span>
-                                <span>50% Unsure</span>
-                                <span>100% Definitely Yes</span>
-                              </div>
-                              <div class="slider-group">
-                                  <label class="slider-option">
-                                      <span class="option-text">Blue object <img src="data/entities/item0.png" style="width:20px; vertical-align: middle;"></span>
-                                      <input type="range" min="0" max="100" ng-model="response.agent1_item0_certainty" class="goal-slider" ng-change="markAnswered('agent1_object')">
-                                      <span class="slider-value">{{response.agent1_item0_certainty || 0}}%</span>
-                                  </label>
-                                  <label class="slider-option">
-                                      <span class="option-text">Pink object <img src="data/entities/item1.png" style="width:20px; vertical-align: middle;"></span>
-                                      <input type="range" min="0" max="100" ng-model="response.agent1_item1_certainty" class="goal-slider" ng-change="markAnswered('agent1_object')">
-                                      <span class="slider-value">{{response.agent1_item1_certainty || 0}}%</span>
-                                  </label>
-                              </div>
-                              <div class="slider-group">
-                                  <label class="slider-option">
-                                      <span class="option-text">No object goal</span>
-                                      <input type="range" min="0" max="100" ng-model="response.agent1_object_goal" class="goal-slider" ng-change="markAnswered('agent1_object')">
-                                      <span class="slider-value">{{response.agent1_object_goal || 0}}%</span>
-                                  </label>
-                              </div>
                           </div>
                       </div>
                   </div>
@@ -680,6 +729,9 @@
             </div>
               
               <div class="controls">
+                <div style="margin-bottom: 10px; font-size: 13px; color: #555;">
+                  Answered: {{answeredCount}} / {{totalRequired}}
+                </div>
                 <button class="button" ng-click="advance_stimuli()" ng-disabled="!canProceed()" ng-class="{'disabled': !canProceed()}">
                   <span ng-if="hasMoreSegments()">Next Segment&ensp;▶</span>
                   <span ng-if="!hasMoreSegments()">Next Video&ensp;▶</span>
@@ -699,7 +751,7 @@
           <div class="progress-fill" ng-style="{'width': ((stim_id + 1) / stimuli_set.length * 100) + '%'}"></div>
         </div>
         <div class="video-container">
-          <video id="fullVideo" class="video-player" ng-src="{{stimuli_set[stim_id].video}}" controls muted></video>
+          <video id="fullVideo" class="video-player" ng-src="{{active_stimuli_set[stim_id].video}}" controls muted></video>
         </div>
       </div>
 
@@ -717,7 +769,6 @@
               <textarea 
                 id="behavioral-description"
                 ng-model="behavioralDescription" 
-                placeholder="e.g., The red agent chased the green agent around the room until the green agent reached the blue landmark."
                 style="width: 100%; height: 120px; padding: 15px; border: 2px solid var(--medium-gray); border-radius: 8px; font-size: 16px; font-family: inherit; resize: vertical;"
                 maxlength="500"
               ></textarea>
