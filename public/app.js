@@ -35,9 +35,12 @@ experimentApp.controller('ExperimentController', function ExperimentController($
   $scope.part_id = 0;
   $scope.questionsVisible = false;
   $scope.show_repeat_warning = false;
-  $scope.behavioralDescription = ""; // Add this line
+  $scope.form = { behavioralDescription: "" };
   $scope.isTrial = false;
   $scope.active_stimuli_set = [];
+  // End-of-study forms
+  $scope.demographics = { age: null, gender: null, genderSelfDescribe: '' };
+  $scope.feedback = { text: '', clarity: null };
 
   // --- Quiz Data ---
   $scope.quiz = {
@@ -54,6 +57,112 @@ experimentApp.controller('ExperimentController', function ExperimentController($
   // --- Experiment Data ---
   $scope.stimuli_set = [];
   $scope.response = {};
+
+  // --- Top Goals Data and Helpers ---
+  $scope.initGoalOptions = function() {
+    const lmMeta = [
+      { id: 'lm0', name: 'blue', img: 'data/entities/lm0.png' },
+      { id: 'lm1', name: 'green', img: 'data/entities/lm1.png' },
+      { id: 'lm2', name: 'red', img: 'data/entities/lm2.png' },
+      { id: 'lm3', name: 'yellow', img: 'data/entities/lm3.png' }
+    ];
+    const itemMeta = [
+      { id: 'item0', name: 'blue object', img: 'data/entities/item0.png' },
+      { id: 'item1', name: 'pink object', img: 'data/entities/item1.png' }
+    ];
+
+    $scope.goalOptions = {
+      categories: [
+        { id: 'physical', label: 'Physical goal' },
+        { id: 'social', label: 'Social goal' }
+      ],
+      physical_go_to: lmMeta.map(meta => ({
+        id: `go_to_${meta.id}`,
+        label: `Go to ${meta.name} landmark`,
+        lmImg: meta.img
+      })),
+      physical_move_object: [].concat(...itemMeta.map(item => (
+        lmMeta.map(lm => ({
+          id: `${item.id}_to_${lm.id}`,
+          label: `Move ${item.name} to ${lm.name} landmark`,
+          itemImg: item.img,
+          lmImg: lm.img
+        }))
+      ))),
+      social: [
+        { id: 'social_hinder', label: 'Hindering' },
+        { id: 'social_neutral', label: 'Neutral' },
+        { id: 'social_help', label: 'Helping' }
+      ]
+    };
+  };
+
+  $scope.initTopGoals = function() {
+    const buildRows = function() {
+      return new Array(5).fill(0).map(function() {
+        return {
+          category: null, // 'physical' | 'social'
+          optionId: null, // e.g., 'go_to_lm0', 'item0_to_lm1', 'social_help'
+          optionLabel: null,
+          weight: 50,
+          openA: false,
+          openB: false
+        };
+      });
+    };
+    $scope.topGoalsAgent0 = buildRows();
+    $scope.topGoalsAgent1 = buildRows();
+  };
+
+  $scope.toggleDropdown = function(row, which) {
+    if (!row) return;
+    if (which === 'A') {
+      row.openA = !row.openA;
+      row.openB = false;
+    } else {
+      if (!row.category) return;
+      row.openB = !row.openB;
+      row.openA = false;
+    }
+  };
+
+  $scope.closeAllDropdowns = function() {
+    ([$scope.topGoalsAgent0 || [], $scope.topGoalsAgent1 || []]).forEach(function(list) {
+      list.forEach(function(r) { r.openA = false; r.openB = false; });
+    });
+  };
+
+  $scope.selectCategory = function(row, category) {
+    if (!row) return;
+    row.category = category;
+    row.optionId = null;
+    row.optionLabel = null;
+    row.openA = false;
+    row.openB = true; // open next dropdown automatically
+    $scope.updateGoalSelectionsAnswered();
+  };
+
+  $scope.selectOption = function(row, option) {
+    if (!row || !option) return;
+    row.optionId = option.id;
+    row.optionLabel = option.label;
+    row.openB = false;
+    $scope.updateGoalSelectionsAnswered();
+  };
+
+  $scope.updateGoalSelectionsAnswered = function() {
+    const redSelected = ($scope.topGoalsAgent0 || []).some(function(r) { return !!r.category && !!r.optionId; });
+    const greenSelected = ($scope.topGoalsAgent1 || []).some(function(r) { return !!r.category && !!r.optionId; });
+    if ($scope.response && $scope.response.answered) {
+      $scope.response.answered.goal_selections_agent0 = redSelected;
+      $scope.response.answered.goal_selections_agent1 = greenSelected;
+      $scope.updateAnsweredCount();
+    }
+  };
+
+  $scope.onGoalWeightChange = function() {
+    $scope.updateGoalSelectionsAnswered();
+  };
 
   // --- Merged Tutorial and Quiz Logic ---
   // This function handles the simple "Next" for tutorial pages (0-6)
@@ -182,6 +291,12 @@ experimentApp.controller('ExperimentController', function ExperimentController($
 
   $scope.startMainExperiment = function() {
       $scope.section = 'stimuli';
+      // Ensure indices reset when entering main experiment
+      $scope.isTrial = false;
+      $scope.stim_id = 0;
+      $scope.part_id = 0;
+      $scope.questionsVisible = false;
+      $scope.reset_response();
       
       // Store experiment start data to Firebase
       try {
@@ -242,35 +357,32 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       
       // Overall ratings
       relationship: 50, // Default to neutral
-      realism: 50, // Default to neutral
       
       // Tracking variables for completion
       answered: {
-        agent0_physical: false,
-        agent0_social: false,
-        agent1_physical: false,
-        agent1_social: false,
-        relationship: false,
-        realism: false
+        // New gating: red selections + green selections + relationship
+        goal_selections_agent0: false,
+        goal_selections_agent1: false,
+        relationship: false
       }
     };
     $scope.answeredCount = 0;
     console.log("DEBUG: response set to:", $scope.response);
     console.log("DEBUG: answered flags:", $scope.response.answered);
+    // Initialize Top Goals structures
+    if (!$scope.goalOptions) { $scope.initGoalOptions(); }
+    $scope.initTopGoals();
   };
 
   // Recompute answered count
-  $scope.totalRequired = 6;
+  $scope.totalRequired = 3; // red selections, green selections, relationship
   $scope.updateAnsweredCount = function() {
     if (!$scope.response || !$scope.response.answered) { $scope.answeredCount = 0; return; }
     const a = $scope.response.answered;
     let count = 0;
-    count += a.agent0_physical ? 1 : 0;
-    count += a.agent0_social ? 1 : 0;
-    count += a.agent1_physical ? 1 : 0;
-    count += a.agent1_social ? 1 : 0;
+    count += a.goal_selections_agent0 ? 1 : 0;
+    count += a.goal_selections_agent1 ? 1 : 0;
     count += a.relationship ? 1 : 0;
-    count += a.realism ? 1 : 0;
     $scope.answeredCount = count;
   };
 
@@ -283,6 +395,8 @@ experimentApp.controller('ExperimentController', function ExperimentController($
         $scope.active_stimuli_set = $scope.stimuli_set;
         $scope.$apply();
       }).catch(error => console.error("Error loading stimuli:", error));
+    // Prepare goal options and reset response
+    $scope.initGoalOptions();
     $scope.reset_response();
   };
 
@@ -358,7 +472,6 @@ experimentApp.controller('ExperimentController', function ExperimentController($
   
   $scope.replayCurrentSegment = function() {
       const video = document.getElementById('stimuliVideo');
-      $scope.questionsVisible = false;
       video.pause();
       // Use timeout to ensure UI updates before playback starts
       $timeout(() => {
@@ -375,7 +488,11 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       const ref = getFirebaseRef();
       const database = getFirebaseDatabase();
       
-      setData(ref(database, `${collection}${path}`), $scope.response)
+      const payload = Object.assign({}, $scope.response, { 
+        topGoalsAgent0: $scope.topGoalsAgent0, 
+        topGoalsAgent1: $scope.topGoalsAgent1 
+      });
+      setData(ref(database, `${collection}${path}`), payload)
         .then(() => {
           console.log("Data saved to Firebase successfully");
         })
@@ -395,11 +512,13 @@ experimentApp.controller('ExperimentController', function ExperimentController($
           $scope.section = 'instructions';
           $scope.inst_id = 8; // Quiz 1 screen
           $scope.isTrial = false;
+          $scope.part_id = 0;
           $scope.active_stimuli_set = $scope.stimuli_set;
         } else {
           // All segments completed - go to behavioral description
           $scope.section = 'behavioral_description';
-          $scope.behavioralDescription = ""; // Reset description
+          if (!$scope.form) { $scope.form = {}; }
+          $scope.form.behavioralDescription = ""; // Reset description
         }
       }
 
@@ -425,7 +544,8 @@ experimentApp.controller('ExperimentController', function ExperimentController($
           $scope.active_stimuli_set = $scope.stimuli_set;
         } else {
           $scope.section = 'behavioral_description';
-          $scope.behavioralDescription = ""; // Reset description
+          if (!$scope.form) { $scope.form = {}; }
+          $scope.form.behavioralDescription = ""; // Reset description
         }
       }
 
@@ -438,7 +558,7 @@ experimentApp.controller('ExperimentController', function ExperimentController($
   };
 
   $scope.submitBehavioralDescription = function() {
-    if (!$scope.behavioralDescription) {
+    if (!($scope.form && $scope.form.behavioralDescription)) {
       alert("Please provide a description.");
       return;
     }
@@ -447,18 +567,97 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       const setData = getFirebaseSet();
       const ref = getFirebaseRef();
       const database = getFirebaseDatabase();
+      const currentStim = ($scope.active_stimuli_set && $scope.active_stimuli_set[$scope.stim_id]) || null;
+      const videoName = currentStim ? currentStim.name : `video_${$scope.stim_id}`;
       
-      setData(ref(database, `results/${$scope.user_id}/behavioral_description`), {
-        description: $scope.behavioralDescription,
+      // Store description under the current video's path
+      setData(ref(database, `results/${$scope.user_id}/${videoName}/behavioral_description`), {
+        description: $scope.form.behavioralDescription,
         timestamp: Date.now()
       }).then(() => {
         console.log("Behavioral description saved to Firebase successfully");
-        $scope.section = 'endscreen'; // Go to endscreen after saving
+        $scope.$applyAsync(function() {
+          // Proceed to next video or finish
+          if ($scope.stim_id < ($scope.active_stimuli_set?.length || 0) - 1) {
+            $scope.stim_id += 1;
+            $scope.part_id = 0;
+            $scope.questionsVisible = false;
+            $scope.reset_response();
+            $scope.section = 'stimuli';
+            $timeout($scope.startSegmentPlayback, 300);
+          } else {
+            // Go to demographics after the last video
+            $scope.section = 'demographics';
+          }
+        });
       }).catch((error) => {
         console.error("Error saving behavioral description to Firebase:", error);
       });
     } catch (error) {
       console.error("Firebase error in submitBehavioralDescription:", error);
+    }
+  };
+
+  // ======================
+  // Demographics & Feedback
+  // ======================
+  $scope.isValidAge = function(age) {
+    if (age === null || age === undefined) { return false; }
+    const n = Number(age);
+    return Number.isInteger(n) && n >= 18 && n <= 100;
+  };
+
+  $scope.isValidDemographics = function() {
+    const hasValidAge = $scope.isValidAge($scope.demographics.age);
+    const gender = $scope.demographics.gender;
+    const genderOk = !!gender && (gender !== 'self_describe' || ($scope.demographics.genderSelfDescribe && $scope.demographics.genderSelfDescribe.trim() !== ''));
+    return hasValidAge && genderOk;
+  };
+
+  $scope.submitDemographics = function() {
+    if (!$scope.isValidDemographics()) {
+      alert('Please complete age (18-100) and gender. If self-describe, please fill the text.');
+      return;
+    }
+    try {
+      const setData = getFirebaseSet();
+      const ref = getFirebaseRef();
+      const database = getFirebaseDatabase();
+      const payload = {
+        participantId: $scope.user_id,
+        timestamp: Date.now(),
+        age: Number($scope.demographics.age),
+        gender: $scope.demographics.gender
+      };
+      if ($scope.demographics.gender === 'self_describe') {
+        payload.genderSelfDescribe = $scope.demographics.genderSelfDescribe;
+      }
+      setData(ref(database, `results/${$scope.user_id}/demographics`), payload).then(function() {
+        $scope.$applyAsync(function() { $scope.section = 'feedback'; });
+      }).catch(function(err) { console.error('Error saving demographics:', err); });
+    } catch (e) {
+      console.error('Firebase error in submitDemographics:', e);
+    }
+  };
+
+  $scope.submitFeedback = function() {
+    try {
+      const setData = getFirebaseSet();
+      const ref = getFirebaseRef();
+      const database = getFirebaseDatabase();
+      const payload = {
+        participantId: $scope.user_id,
+        timestamp: Date.now(),
+        text: $scope.feedback.text || ''
+      };
+      if ($scope.feedback.clarity !== null && $scope.feedback.clarity !== undefined) {
+        payload.clarity = Number($scope.feedback.clarity);
+      }
+      setData(ref(database, `results/${$scope.user_id}/feedback`), payload).then(function() {
+        $scope.$applyAsync(function() { $scope.section = 'endscreen'; });
+      }).catch(function(err) { console.error('Error saving feedback:', err); });
+    } catch (e) {
+      console.error('Firebase error in submitFeedback:', e);
     }
   };
 
@@ -495,12 +694,9 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       }
 
       // Check if all required questions have been answered
-      const allAnswered = $scope.response.answered.agent0_physical && 
-                         $scope.response.answered.agent0_social && 
-                         $scope.response.answered.agent1_physical && 
-                         $scope.response.answered.agent1_social && 
-                         $scope.response.answered.relationship && 
-                         $scope.response.answered.realism;
+      const allAnswered = $scope.response.answered.goal_selections_agent0 && 
+                         $scope.response.answered.goal_selections_agent1 &&
+                         $scope.response.answered.relationship;
       
       console.log("Answered status:", $scope.response.answered);
       console.log("All answered:", allAnswered);
