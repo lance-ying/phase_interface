@@ -1,56 +1,59 @@
 [
   {
-    "name": "chasing",
-    "video": "stimuli/chasing.mp4",
+    "name": "neutral_1",
+    "video": "stimuli/D082920_1148200_0_F8_E0_G['LMA', 0, 2, 1]_['LMO', 1, 3, 1]_ST0_2_SZ0_3_1_1_P12_3_0_16_A0_0_C0_0_AN0.04_1.72_MCTS_L100_R0.0_0.0_PL1_EL1_0_0_s1000_r10_cI1.25_cB1000_e23.mp4",
+    "category": "neutral",
+    "description": "red go to red landmark; green put pink object to yellow landmark",
     "segments": [
-      { "start": 0, "end": 1 },
-      { "start": 1, "end": 2 },
-      { "start": 2, "end": 3 }
-    ],
-    "length": 3
-  },
-  {
-    "name": "fighting",
-    "video": "stimuli/fighting.mp4",
-    "segments": [
-      { "start": 0, "end": 1 },
-      { "start": 1, "end": 4 },
+      { "start": 0, "end": 4 },
       { "start": 4, "end": 10 }
     ],
     "length": 10
   },
   {
-    "name": "attacking",
-    "video": "stimuli/attacking.mp4",
-    "category": "hindering",
-    "description": "red agent attacks green agent",
-    "segments": [
-      { "start": 0, "end": 0.6 },
-      { "start": 0.6, "end": 5 }
-    ],
-    "length": 5
-  },
-  {
-    "name": "blocking_1",
-    "video": "stimuli/blocking_1.mp4",
-    "category": "hindering",
-    "description": "red agent blocks green agent",
-    "segments": [
-      { "start": 0, "end": 1 },
-      { "start": 1, "end": 3 },
-      { "start": 3, "end": 8 }
-    ],
-    "length": 8
-  },
-  {
-    "name": "helping",
-    "video": "stimuli/helping.mp4",
+    "name": "helping_1",
+    "video": "stimuli/D082920_1248090_0_F8_E15_G['LMO', 0, 0, 1]_['LMO', 0, 0, 1]_ST1_3_SZ3_1_0_0_P12_10_4_14_A0_0_C0_0_AN0.31_1.54_MCTS_L100_R10.0_0.0_PL1_EL1_0_0_s1000_r10_cI1.25_cB1000_e9.mp4",
     "category": "helping",
-    "description": "red agent helps green agent carry blue object to yellow landmark",
+    "description": "red send blue object to green agent; green put blue object to blue landmark",
     "segments": [
-      { "start": 0, "end": 2 },
-      { "start": 2, "end": 6 }
+      { "start": 0, "end": 8 },
+      { "start": 8, "end": 13 }
     ],
-    "length": 6
+    "length": 13
+  },
+  {
+    "name": "stealing_1",
+    "video": "stimuli/D082920_1456060_0_F8_E4_G['LMO', 1, 3, 1]_['LMO', 1, 2, 1]_ST3_2_SZ0_0_2_0_P5_15_14_1_A0_0_C0_0_AN-6.24_1.93_MCTS_L100_R0.0_0.0_PL1_EL1_0_0_s1000_r10_cI1.25_cB1000_e17.mp4",
+    "category": "hindering",
+    "description": "red put pink object to yellow landmark; green put pink object to red landmark",
+    "segments": [
+      { "start": 0, "end": 9 },
+      { "start": 9, "end": 25 }
+    ],
+    "length": 25
+  },
+  {
+    "name": "stealing_2",
+    "video": "stimuli/D090220_0310200_0_F8_E18_G['LMO', 0, 1, 1]_['LMO', 0, 3, 1]_ST2_3_SZ0_0_0_3_P2_0_6_3_A0_0_C0_0_AN3.25_6.21_MCTS_L100_R0.0_0.0_PL1_EL1_0_0_s1000_r10_cI1.25_cB1000_e2.mp4",
+    "category": "hindering",
+    "description": "red put blue object to green landmark; green put blue object to yellow landmark",
+    "segments": [
+      { "start": 0, "end": 9 },
+      { "start": 9, "end": 14 },
+      { "start": 14, "end": 25 }
+    ],
+    "length": 25
+  },
+  {
+    "name": "chasing_1",
+    "video": "stimuli/D090320_0628530_0_F8_E13_G['TE', 0, 1, 1]_['TE', 0, 1, -1]_ST1_3_SZ0_0_3_3_P14_7_10_14_A0_0_C0_0_AN3.83_2.47_MCTS_L100_R0.0_-10.0_PL1_EL1_0_0_s1000_r10_cI1.25_cB1000_e1.mp4",
+    "category": "hindering",
+    "description": "red chasing green",
+    "segments": [
+      { "start": 0, "end": 10 },
+      { "start": 10, "end": 16 },
+      { "start": 16, "end": 25 }
+    ],
+    "length": 25
   }
-] 
+]
