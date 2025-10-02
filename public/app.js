@@ -99,7 +99,7 @@ experimentApp.controller('ExperimentController', function ExperimentController($
 
   $scope.initTopGoals = function() {
     const buildRows = function() {
-      return new Array(5).fill(0).map(function() {
+      return new Array(3).fill(0).map(function() {
         return {
           category: null, // 'physical' | 'social'
           optionId: null, // e.g., 'go_to_lm0', 'item0_to_lm1', 'social_help'
@@ -151,8 +151,10 @@ experimentApp.controller('ExperimentController', function ExperimentController($
   };
 
   $scope.updateGoalSelectionsAnswered = function() {
-    const redSelected = ($scope.topGoalsAgent0 || []).some(function(r) { return !!r.category && !!r.optionId; });
-    const greenSelected = ($scope.topGoalsAgent1 || []).some(function(r) { return !!r.category && !!r.optionId; });
+    const redCount = ($scope.topGoalsAgent0 || []).filter(function(r) { return !!r.category && !!r.optionId; }).length;
+    const greenCount = ($scope.topGoalsAgent1 || []).filter(function(r) { return !!r.category && !!r.optionId; }).length;
+    const redSelected = redCount >= 3;
+    const greenSelected = greenCount >= 3;
     if ($scope.response && $scope.response.answered) {
       $scope.response.answered.goal_selections_agent0 = redSelected;
       $scope.response.answered.goal_selections_agent1 = greenSelected;
@@ -488,10 +490,18 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       const ref = getFirebaseRef();
       const database = getFirebaseDatabase();
       
-      const payload = Object.assign({}, $scope.response, { 
-        topGoalsAgent0: $scope.topGoalsAgent0, 
-        topGoalsAgent1: $scope.topGoalsAgent1 
-      });
+      const serializeRows = function(rows) {
+        return (rows || []).filter(function(r) { return !!r.optionId; }).map(function(r) {
+          return { category: r.category, optionId: r.optionId, label: r.optionLabel, weight: Number(r.weight) };
+        });
+      };
+      const payload = {
+        topGoalsAgent0: serializeRows($scope.topGoalsAgent0),
+        topGoalsAgent1: serializeRows($scope.topGoalsAgent1),
+        relationship: $scope.response.relationship,
+        video: ($scope.active_stimuli_set && $scope.active_stimuli_set[$scope.stim_id] ? $scope.active_stimuli_set[$scope.stim_id].video : null),
+        timestamp: Date.now()
+      };
       setData(ref(database, `${collection}${path}`), payload)
         .then(() => {
           console.log("Data saved to Firebase successfully");
@@ -668,7 +678,7 @@ experimentApp.controller('ExperimentController', function ExperimentController($
 
   $scope.startTrialRun = function() {
     // Pick a simple 2-3 segment stimulus (e.g., 'helping')
-    const pickName = 'helping';
+    const pickName = 'helping_1';
     const stim = ($scope.stimuli_set || []).find(s => s.name === pickName) || $scope.stimuli_set[0];
     if (!stim) { alert('Trial stimulus not found.'); return; }
     $scope.isTrial = true;
