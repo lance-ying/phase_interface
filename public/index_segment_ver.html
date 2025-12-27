@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html ng-app="experimentApp">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phase Interface Experiment</title>
+  
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular-sanitize.min.js"></script>
+  
+      <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+      import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-database.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
+
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyBi2-YsTyaboj_UF4C6Y5D7CvPscnaUbDA",
+        authDomain: "phase-interface.firebaseapp.com",
+        databaseURL: "https://phase-interface-default-rtdb.firebaseio.com",
+        projectId: "phase-interface",
+        storageBucket: "phase-interface.firebasestorage.app",
+        messagingSenderId: "141024125282",
+        appId: "1:141024125282:web:77eb2030a17d0bd9978c3b",
+        measurementId: "G-5EBHPNE4DQ"
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const database = getDatabase(app);
+
+      // Make Firebase available globally for AngularJS
+      window.firebaseApp = app;
+      window.firebaseDatabase = database;
+      window.firebaseRef = ref;
+      window.firebaseSet = set;
+      window.firebasePush = push;
+      window.firebaseOnValue = onValue;
+    </script>
+  
+      <script src="app.js?v=1.0.2"></script>
+  
+  <style>
+    :root {
+      --primary-color: #667eea;
+      --secondary-color: #764ba2;
+      --light-gray: #f8f9fa;
+      --medium-gray: #e9ecef;
+      --dark-gray: #495057;
+      --text-color: #2c3e50;
+      --primary-accent: #3498db;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--light-gray); min-height: 100vh; color: var(--text-color);
+    }
+
+    .main {
+      max-width: 800px; margin: 2rem auto; padding: 20px; background: white;
+      border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      transition: max-width 0.4s ease-in-out;
+    }
+    
+    .main.stimuli-mode { max-width: 1400px; }
+
+    .section_title {
+      font-size: 24px; font-weight: bold; text-align: center;
+      margin: 20px 0 30px 0; color: var(--text-color);
+    }
+
+    .progress-bar {
+      width: 100%; height: 8px; background-color: var(--medium-gray);
+      border-radius: 4px; margin: 20px 0; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, #3498db, #2ecc71);
+      transition: width 0.3s ease;
+    }
+
+    .panel {
+      background: white; border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      margin: 20px 0; overflow: hidden;
+    }
+    .panel-heading {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white; padding: 25px; text-align: center;
+    }
+    .panel-heading h4 { font-size: 20px; font-weight: 300; margin: 0; }
+    .panel-body { padding: 30px; line-height: 1.6; }
+    .panel-body p { margin-bottom: 15px; font-size: 16px; }
+    .panel-body ol, .panel-body ul { margin: 15px 0; padding-left: 25px; }
+
+    .quiz-section, .quiz-question {
+      background: var(--light-gray); border-radius: 8px; padding: 25px;
+      margin: 20px 0; border-left: 4px solid var(--primary-accent);
+    }
+    .instruction-video { text-align: center; margin: 25px 0; }
+    .instruction-image { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    
+    .controls { text-align: center; margin-top: 40px; }
+    .button {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white; border: none; padding: 15px 35px; font-size: 16px; font-weight: 600;
+      border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .button.replay-button {
+        padding: 10px 25px;
+        font-size: 14px;
+        background: var(--dark-gray);
+    }
+    .button:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
+    .button:disabled { background: #bdc3c7; cursor: not-allowed; transform: none; box-shadow: none; }
+    .button.disabled { background: #bdc3c7; cursor: not-allowed; transform: none; box-shadow: none; }
+    
+    .repeat-instructions {
+      padding: 15px; margin: 20px 0; border-radius: 8px;
+      background: #e74c3c; color: white; text-align: center; font-weight: bold;
+    }
+
+    /* --- Two-Panel Layout --- */
+    .stimuli-container { display: flex; gap: 30px; align-items: flex-start; }
+    .left-panel { flex: 1.2; }
+    .right-panel { flex: 1; height: 80vh; overflow-y: auto; padding-right: 15px;}
+    
+    .video-container { 
+        text-align: center; position: relative; 
+        height: 70vh; /* Make container taller */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .video-player { 
+        width: 100%; 
+        max-height: 100%; /* Ensure video fits within the container */
+        border-radius: 12px; 
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15); 
+        object-fit: contain;
+        background-color: #000;
+    }
+
+    .segment-info {
+        text-align: center;
+        margin-top: 15px;
+        font-weight: 600;
+        color: var(--dark-gray);
+    }
+    
+    .questions-placeholder {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        text-align: center;
+        color: #999;
+        background-color: var(--light-gray);
+        border-radius: 12px;
+    }
+    .questions-placeholder h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: var(--text-color);
+    }
+
+    /* --- New Question Styles --- */
+    .question-group {
+        margin-bottom: 25px; padding: 20px; background: #fff;
+        border-radius: 12px; border: 1px solid var(--medium-gray);
+    }
+    .question-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+    .goal-block { margin-bottom: 15px; }
+    .goal-block-title { font-size: 14px; color: var(--dark-gray); margin-bottom: 10px; font-weight: 600; padding-bottom: 5px; border-bottom: 1px solid var(--medium-gray);}
+    
+    .goal-options { display: flex; flex-direction: column; gap: 10px; list-style: none; padding: 0; }
+    .goal-options-horizontal { display: flex; flex-direction: row; justify-content: space-around; list-style: none; padding: 0; }
+    
+    .goal-options li, .goal-options-horizontal li {
+        padding: 8px; border-radius: 6px; transition: background-color 0.2s;
+    }
+    .goal-options li label, .goal-options-horizontal li label {
+        display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;
+    }
+    .goal-options li:hover, .goal-options-horizontal li:hover { background-color: var(--light-gray); }
+    .goal-options img, .goal-options-horizontal img { width: 25px; height: 25px; vertical-align: middle; }
+    
+    /* Top 5 Goals UI */
+    .top-goals-row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+    .top-goals-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; width: 100%; }
+    .top-goals-slider { width: 100%; margin-top: 8px; }
+    .dropdown {
+        position: relative;
+    }
+    .dropdown-toggle {
+        background: var(--light-gray);
+        border: 1px solid var(--medium-gray);
+        border-radius: 6px;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 14px;
+        min-width: 180px;
+        text-align: left;
+    }
+    .dropdown-toggle:disabled {
+        cursor: not-allowed;
+        color: #999;
+    }
+    .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: #fff;
+        border: 1px solid var(--medium-gray);
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        padding: 8px;
+        z-index: 20;
+        min-width: 260px;
+        max-height: 280px;
+        overflow: auto;
+    }
+    .dropdown-item {
+        padding: 8px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+    }
+    .dropdown-item:hover { background: var(--light-gray); }
+    .dropdown-section-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--dark-gray);
+        padding: 6px 8px 4px 8px;
+        opacity: 0.7;
+    }
+    .icon-inline { width: 18px; height: 18px; vertical-align: middle; }
+    .arrow-inline { opacity: 0.6; padding: 0 2px; }
+
+    /* New Slider Styles */
+    .slider-container {
+        margin: 20px 0;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        border: 2px solid var(--medium-gray);
+    }
+    
+    .slider-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--dark-gray);
+    }
+    
+    .slider-labels span {
+        flex: 1;
+    }
+
+    .slider-labels span:first-child {
+        text-align: left;
+    }
+
+    .slider-labels span:nth-child(2) {
+        text-align: center;
+    }
+
+    .slider-labels span:last-child {
+        text-align: right;
+    }
+    
+    .slider-group {
+        margin-bottom: 20px;
+    }
+    
+    .slider-option {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        padding: 10px;
+        background: var(--light-gray);
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+    
+    .slider-option:hover {
+        background: #e3f2fd;
+        transform: translateY(-1px);
+    }
+    
+    .option-text {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+        margin-right: 15px;
+    }
+    
+    .goal-slider {
+        width: 100%; /* Ensure slider takes full width */
+        margin: 10px 0; /* Add some vertical margin */
+        height: 6px;
+        border-radius: 3px;
+        background: #ddd;
+        outline: none;
+        -webkit-appearance: none;
+    }
+    
+    /* Default thumb: gray until interaction */
+    .goal-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #bdc3c7;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        transition: background 0.2s ease;
+    }
+    
+    .goal-slider::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #bdc3c7;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        transition: background 0.2s ease;
+    }
+    
+    /* After interaction: blue */
+    .goal-slider.slider-interacted::-webkit-slider-thumb { background: var(--primary-accent); }
+    .goal-slider.slider-interacted::-moz-range-thumb { background: var(--primary-accent); }
+    
+    .slider-value {
+        min-width: 50px;
+        text-align: center;
+        font-weight: bold;
+        color: var(--primary-accent);
+        font-size: 14px;
+    }
+    
+    .slider-value-display {
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        color: var(--primary-accent);
+        margin-top: 10px;
+        padding: 10px;
+        background: var(--light-gray);
+        border-radius: 6px;
+    }
+    
+    .scale-labels {
+        display: flex; justify-content: space-between; font-size: 12px; 
+        padding: 5px 10px 0 10px; color: var(--dark-gray);
+    }
+    
+    /* Responsive design */
+    @media (max-width: 992px) {
+      .main.stimuli-mode { max-width: 800px; }
+      .stimuli-container { flex-direction: column; }
+      .right-panel { height: auto; overflow-y: visible; padding-right: 0; }
+      .video-container { height: auto; } /* Let video size be natural on mobile */
+    }
+  </style>
+</head>
+
+<body ng-controller="ExperimentController">
+  <div class="main" ng-class="{'stimuli-mode': section === 'stimuli' || section === 'behavioral_description'}">
+    
+    <div ng-if="section === 'instructions'">
+      
+      <div ng-if="inst_id === 0" class="panel">
+        <div class="panel-heading"><h4>We're researchers at MIT running an experiment to help computers learn how to recognize social interactions</h4></div>
+        <div class="panel-body">
+          <p style="text-align:center;"><img src="https://i.imgur.com/LMbjSIp.png" style="width:250px;" /></p>
+          <p>Have you ever wanted to have a robot that helps around the home and takes care of you? You'll be helping make that happen by showing them what kinds of social interactions there are.</p>
+          <p><strong>What you'll do:</strong></p>
+          <ol>
+            <li>Read the instructions and answer the quizzes</li>
+            <li>Watch 10 short videos, answering questions after each segment.</li>
+            <li>Each video is an animated clip describing an environment with creatures and objects</li>
+          </ol>
+          <p><strong>Important:</strong> You cannot go back to previous videos, so please pay attention to each one.</p>
+        </div>
+      </div>
+      
+      <div ng-if="inst_id === 1" class="panel">
+            <div class="panel-heading"><h4>Instructions</h4></div>
+            <div class="panel-body">
+              <p style="font-size:20px"><b>Please pay attention to the following instructions. You will need to pass 4 quizzes before proceeding to the main experiment.</b></p>
+              <p>Each animated video has:</p>
+              <ul>
+                  <li><b>Entities</b>: <b>creatures</b> (trapezoids) or <b>objects</b> (circles). Entities can be of different colors and sizes. Bigger entities are heavier.</li>
+                  <li><b>Landmarks</b>: colored squares that creatures may try to get to or move objects to.</li>
+                  <li><b>Walls</b>: black lines, creatures and objects can't move through walls.</li>
+              </ul>
+              <p style="text-align:center;"><img src="data/entities/env-turk.png" style="width:420px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);"></p>
+            </div>
+        </div>
+      
+      <div ng-if="inst_id === 2" class="quiz-section">
+        <h3><strong>Creatures - Actions</strong></h3>
+        <p>A creature can move, push, and grab things. They cannot move through walls.</p>
+        <div class="instruction-video"><video class="instruction-image" controls autoplay muted loop><source src="data/entities/intro.mp4" type="video/mp4"></video></div>
+      </div>
+      <div ng-if="inst_id === 3" class="quiz-section">
+        <h3><strong>Creatures - Knowledge about the environment</strong></h3>
+        <p>A creature <strong>only knows the locations of entities it can see or touch</strong>. They cannot see through walls.</p>
+        <p>Below, the <strong>red creature can see</strong> the green creature and pink object, but <strong>not the blue object</strong>.</p>
+        <div class="instruction-video"><img src="data/entities/intro_fov.png" class="instruction-image" width="220"></div>
+        <p>In this video, the red creature must first find the blue object before it can move it.</p>
+        <div class="instruction-video"><video class="instruction-image" controls autoplay muted loop><source src="data/entities/intro_finding.mp4" type="video/mp4"></video></div>
+      </div>
+      <div ng-if="inst_id === 4" class="quiz-section">
+        <h3><strong>Creatures - Goals</strong></h3>
+        <p>A creature can have a <strong>personal goal</strong> (like getting to a landmark or moving an object) or a <strong>social goal</strong> (helping or hindering another creature).</p>
+         <div class="instruction-video">
+          <video class="instruction-image" controls autoplay muted loop><source src="data/entities/intro_goto_place.mp4"></video>
+          <p style="text-align: center; margin-top: 10px;"><strong>Goal:</strong> Get to yellow landmark</p>
+        </div>
+      </div>
+      <div ng-if="inst_id === 5" class="quiz-section">
+        <h3><strong>Creatures - Relations</strong></h3>
+        <p>A relation between creatures can be described as <strong>Adversarial</strong>, <strong>Neutral</strong>, or <strong>Friendly</strong>.</p>
+        <div class="instruction-video">
+          <video class="instruction-image" controls autoplay muted loop><source src="data/entities/friendly.mp4"></video>
+           <p style="text-align: center; margin-top: 10px;"><strong>Example:</strong> Friendly relationship</p>
+        </div>
+      </div>
+      <div ng-if="inst_id === 6" class="quiz-section">
+        <h3><strong>Creatures - Strength</strong></h3>
+        <p>Creatures can have different strengths. Strength is <strong>not</strong> associated with size. In the video below, the <strong>red agent is stronger</strong>.</p>
+        <div class="instruction-video"><video class="instruction-image" controls autoplay muted loop><source src="data/entities/strength.mp4"></video></div>
+      </div>
+      
+      <div ng-if="show_repeat_warning" class="repeat-instructions">
+        Incorrect. Please review the instructions carefully and try the quiz again.
+      </div>
+
+      <div ng-if="inst_id === 7" class="panel">
+        <div class="panel-heading"><h4>Practice Round</h4></div>
+        <div class="panel-body">
+          <p>This short practice round shows exactly what you will do in the main experiment.</p>
+          <ol>
+            <li>Watch a short video with multiple segments.</li>
+            <li>After each segment, answer questions about each agent's goals and relationship.</li>
+            <li>You can replay the current segment if needed.</li>
+          </ol>
+          <p>Click Start Practice to begin. After the practice, you will proceed to Quiz 1.</p>
+          <div class="controls">
+            <button class="button" ng-click="startTrialRun()">Start Practice ▶</button>
+          </div>
+        </div>
+      </div>
+
+      <div ng-if="inst_id === 8" class="quiz-question">
+          <p style="font-weight: bold; font-size: 22px; text-align:center; margin-bottom: 20px;">Quiz 1: Knowledge</p>
+          <div class="instruction-video"><img src="data/entities/quiz_fov.png" class="instruction-image"></div>
+          <div style="display: flex; justify-content: center; gap: 40px; text-align: left;">
+            <div>
+              <p><b>Can <img src="data/entities/agent1.png" style="width:25px;"> see <img src="data/entities/agent0.png" style="width:25px;">?</b></p>
+              <label style="display:block; margin: 5px; cursor:pointer;"><input type="radio" ng-model="quiz.quiz1_see" value="yes"> Yes</label>
+              <label style="display:block; margin: 5px; cursor:pointer;"><input type="radio" ng-model="quiz.quiz1_see" value="no"> No</label>
+            </div>
+            <div>
+              <p><b>Does <img src="data/entities/agent0.png" style="width:25px;"> know where <img src="data/entities/item0.png" style="width:25px;"> is?</b></p>
+              <label style="display:block; margin: 5px; cursor:pointer;"><input type="radio" ng-model="quiz.quiz1_touch" value="yes"> Yes</label>
+              <label style="display:block; margin: 5px; cursor:pointer;"><input type="radio" ng-model="quiz.quiz1_touch" value="no"> No</label>
+            </div>
+          </div>
+          <div class="controls"><button class="button" ng-click="submitQuiz1()">Submit</button></div>
+        </div>
+        <div ng-if="inst_id === 9" class="quiz-question">
+            <p style="font-weight: bold; font-size: 22px; text-align:center; margin-bottom: 20px;">Quiz 2: Goals</p>
+            <div class="instruction-video"><video class="instruction-image" controls><source src="data/entities/personal_goal_quiz.mp4"></video></div>
+            <p style="text-align:center;"><b>What is <img src="data/entities/agent0.png" style="width:25px;">'s personal goal?</b></p>
+            <ul class="goal-options-horizontal" style="max-width: 400px; margin: auto;">
+                <li><label><input type="radio" name="quiz2" ng-model="quiz.quiz2" value="lm2"><img src="data/entities/lm2.png"></label></li>
+                <li><label><input type="radio" name="quiz2" ng-model="quiz.quiz2" value="lm1"><img src="data/entities/lm1.png"></label></li>
+                <li><label><input type="radio" name="quiz2" ng-model="quiz.quiz2" value="lm0"><img src="data/entities/lm0.png"></label></li>
+                <li><label><input type="radio" name="quiz2" ng-model="quiz.quiz2" value="lm3"><img src="data/entities/lm3.png"></label></li>
+            </ul>
+             <div class="controls"><button class="button" ng-click="submitQuiz2()">Submit</button></div>
+        </div>
+        <div ng-if="inst_id === 10" class="quiz-question">
+            <p style="font-weight: bold; font-size: 22px; text-align:center; margin-bottom: 20px;">Quiz 3: Relations</p>
+            <div class="instruction-video"><video class="instruction-image" controls><source src="data/entities/helping_quiz2.mp4"></video></div>
+            <p style="text-align:center;"><b>What is <img src="data/entities/agent0.png" style="width:25px;">'s social goal?</b></p>
+            <ul class="goal-options-horizontal" style="max-width: 400px; margin: auto;">
+                <li><label><input type="radio" name="quiz3" ng-model="quiz.quiz3" value="help"> Help <img src="data/entities/agent1.png" style="width:25px;"></label></li>
+                <li><label><input type="radio" name="quiz3" ng-model="quiz.quiz3" value="hinder"> Hinder <img src="data/entities/agent1.png" style="width:25px;"></label></li>
+            </ul>
+            <div class="controls"><button class="button" ng-click="submitQuiz3()">Submit</button></div>
+        </div>
+        <div ng-if="inst_id === 11" class="quiz-question">
+            <p style="font-weight: bold; font-size: 22px; text-align:center; margin-bottom: 20px;">Quiz 4: Strength</p>
+            <div class="instruction-video"><video class="instruction-image" controls><source src="data/entities/quiz3.mp4"></video></div>
+            <p style="text-align:center;"><b>Which creature is stronger?</b></p>
+            <ul class="goal-options-horizontal" style="max-width: 400px; margin: auto;">
+                <li><label><input type="radio" name="quiz4" ng-model="quiz.quiz4" value="agent0"><img src="data/entities/agent0.png" style="width:25px;"></label></li>
+                <li><label><input type="radio" name="quiz4" ng-model="quiz.quiz4" value="agent1"><img src="data/entities/agent1.png" style="width:25px;"></label></li>
+                <li><label><input type="radio" name="quiz4" ng-model="quiz.quiz4" value="same">Same</label></li>
+            </ul>
+            <div class="controls"><button class="button" ng-click="submitQuiz4()">Submit</button></div>
+        </div>
+      
+       <div ng-if="inst_id === 12" class="quiz-section" style="text-align:center;">
+            <h3><strong>Congratulations!</strong></h3>
+            <p>You answered all quiz questions correctly. Great job!</p>
+            <p>You will now start the main experiment.</p>
+            <div class="controls">
+                <button class="button" ng-click="startMainExperiment()">Start Main Experiment</button>
+            </div>
+        </div>
+
+      <div class="controls" ng-if="inst_id <= 6">
+        <button class="button" ng-click="advance_tutorial()">
+          Next&ensp;▶
+        </button>
+      </div>
+    </div>
+
+    <div ng-if="section === 'stimuli'" class="stimuli-container">
+        <div class="left-panel">
+          <div class="section_title">
+            <span ng-if="isTrial">Practice Trial</span>
+            <span ng-if="!isTrial">Round {{stim_id + 1}} / {{stimuli_set.length}}</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" ng-style="{'width': ((stim_id + 1) / stimuli_set.length * 100) + '%'}"></div>
+          </div>
+          <div class="video-container">
+            <video id="stimuliVideo" class="video-player" ng-src="{{active_stimuli_set[stim_id].video}}" muted></video>
+            <div class="segment-info" ng-if="active_stimuli_set[stim_id]">
+              <span ng-if="isTrial">Trial • </span>Segment {{part_id + 1}} of {{active_stimuli_set[stim_id].segments.length}}
+            </div>
+          </div>
+          <div class="controls" style="margin-top: 20px;">
+              <button class="button replay-button" ng-click="replayCurrentSegment()">Replay Segment ⟲</button>
+          </div>
+        </div>
+  
+        <div class="right-panel">
+            <div ng-if="!questionsVisible" class="questions-placeholder">
+                <h3>Please watch the segment.</h3>
+                <p>Questions will appear here when the segment finishes.</p>
+            </div>
+  
+            <div ng-if="questionsVisible" ng-click="closeAllDropdowns()">
+              <div class="question-group">
+                <div class="question-title"><img src="data/entities/agent0.png" style="width:22px; vertical-align: middle; margin-right:6px;">Top 3 Goals for Red Agent</div>
+                <div style="margin-bottom:10px; color:#555; font-size: 14px;">Select top three goals that best describe the red agent. Set the likelihood for each selected goal. You must choose three goals. If you are certain about one particular goal, you can randomly choose two other goals and mark them to be unlikely.</div>
+                <div class="goal-block">
+                  <div class="slider-container" style="border-width:1px;">
+                    <div class="top-goals-row" ng-repeat="row in topGoalsAgent0 track by $index" ng-click="$event.stopPropagation()">
+                      <div class="top-goals-controls">
+                        <div style="width:26px; color:#666; text-align:center;">{{$index + 1}}.</div>
+                        <div class="dropdown">
+                          <button type="button" class="dropdown-toggle" ng-click="toggleDropdown(row, 'A')">{{ row.category ? (row.category === 'physical' ? 'Physical goal' : 'Social goal') : 'Choose category' }}</button>
+                          <div class="dropdown-menu" ng-if="row.openA">
+                            <div class="dropdown-item" ng-click="selectCategory(row, 'physical')">Physical goal</div>
+                            <div class="dropdown-item" ng-click="selectCategory(row, 'social')">Social goal</div>
+                          </div>
+                        </div>
+                        <div class="dropdown" ng-if="!row.category || row.category === 'physical'">
+                          <button type="button" class="dropdown-toggle" ng-click="toggleDropdown(row, 'B')" ng-disabled="!row.category">{{ row.optionLabel || (row.category ? 'Choose specific goal' : 'Choose category first') }}</button>
+                          <div class="dropdown-menu" ng-if="row.openB">
+                            <div ng-if="row.category === 'physical'">
+                              <div class="dropdown-section-title">Go to landmark</div>
+                              <div class="dropdown-item" ng-repeat="opt in goalOptions.physical_go_to" ng-click="selectOption(row, opt)">
+                                <img class="icon-inline" ng-src="{{opt.lmImg}}"> {{opt.label}}
+                              </div>
+                              <div class="dropdown-section-title">Move object to landmark</div>
+                              <div class="dropdown-item" ng-repeat="opt in goalOptions.physical_move_object" ng-click="selectOption(row, opt)">
+                                <img class="icon-inline" ng-src="{{opt.itemImg}}"><span class="arrow-inline">→</span><img class="icon-inline" ng-src="{{opt.lmImg}}"> {{opt.label}}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="top-goals-slider">
+                        <div class="slider-labels" ng-if="row.category === 'physical'">
+                          <span>0% Definitely No</span>
+                          <span>50% Unsure</span>
+                          <span>100% Definitely Yes</span>
+                        </div>
+                        <div class="slider-labels" ng-if="row.category === 'social'">
+                          <span>0% Hindering</span>
+                          <span>50% Neutral</span>
+                          <span>100% Helping</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                          <input type="range" min="0" max="100" ng-model="row.weight" class="goal-slider" ng-change="onGoalWeightChange()">
+                          <div class="slider-value" style="min-width:48px;">{{row.weight || 0}}%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="question-group">
+                <div class="question-title"><img src="data/entities/agent1.png" style="width:22px; vertical-align: middle; margin-right:6px;">Top 3 Goals for Green Agent</div>
+                <div style="margin-bottom:10px; color:#555; font-size: 14px;">Select top three goals that best describe the green agent. Set the likelihood for each selected goal. You must choose three goals. If you are certain about one particular goal, you can randomly choose two other goals and mark them to be unlikely.</div>
+                <div class="goal-block">
+                  <div class="slider-container" style="border-width:1px;">
+                    <div class="top-goals-row" ng-repeat="row in topGoalsAgent1 track by $index" ng-click="$event.stopPropagation()">
+                      <div class="top-goals-controls">
+                        <div style="width:26px; color:#666; text-align:center;">{{$index + 1}}.</div>
+                        <div class="dropdown">
+                          <button type="button" class="dropdown-toggle" ng-click="toggleDropdown(row, 'A')">{{ row.category ? (row.category === 'physical' ? 'Physical goal' : 'Social goal') : 'Choose category' }}</button>
+                          <div class="dropdown-menu" ng-if="row.openA">
+                            <div class="dropdown-item" ng-click="selectCategory(row, 'physical')">Physical goal</div>
+                            <div class="dropdown-item" ng-click="selectCategory(row, 'social')">Social goal</div>
+                          </div>
+                        </div>
+                        <div class="dropdown" ng-if="!row.category || row.category === 'physical'">
+                          <button type="button" class="dropdown-toggle" ng-click="toggleDropdown(row, 'B')" ng-disabled="!row.category">{{ row.optionLabel || (row.category ? 'Choose specific goal' : 'Choose category first') }}</button>
+                          <div class="dropdown-menu" ng-if="row.openB">
+                            <div ng-if="row.category === 'physical'">
+                              <div class="dropdown-section-title">Go to landmark</div>
+                              <div class="dropdown-item" ng-repeat="opt in goalOptions.physical_go_to" ng-click="selectOption(row, opt)">
+                                <img class="icon-inline" ng-src="{{opt.lmImg}}"> {{opt.label}}
+                              </div>
+                              <div class="dropdown-section-title">Move object to landmark</div>
+                              <div class="dropdown-item" ng-repeat="opt in goalOptions.physical_move_object" ng-click="selectOption(row, opt)">
+                                <img class="icon-inline" ng-src="{{opt.itemImg}}"><span class="arrow-inline">→</span><img class="icon-inline" ng-src="{{opt.lmImg}}"> {{opt.label}}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="top-goals-slider">
+                        <div class="slider-labels" ng-if="row.category === 'physical'">
+                          <span>0% Definitely No</span>
+                          <span>50% Unsure</span>
+                          <span>100% Definitely Yes</span>
+                        </div>
+                        <div class="slider-labels" ng-if="row.category === 'social'">
+                          <span>0% Hindering</span>
+                          <span>50% Neutral</span>
+                          <span>100% Helping</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                          <input type="range" min="0" max="100" ng-model="row.weight" class="goal-slider" ng-change="onGoalWeightChange()">
+                          <div class="slider-value" style="min-width:48px;">{{row.weight || 0}}%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="question-group">
+                <div class="question-title">How would you describe the creatures' relationship?</div>
+                <div class="slider-container">
+                    <div class="slider-labels">
+                        <span>0% Adversarial</span>
+                        <span>50% Neutral</span>
+                        <span>100% Friendly</span>
+                    </div>
+                    <input type="range" min="0" max="100" ng-model="response.relationship" class="goal-slider" ng-change="markAnswered('relationship')">
+                    <div class="slider-value-display">{{response.relationship || 0}}%</div>
+                </div>
+              </div>
+              
+              <div class="controls">
+                <div style="margin-bottom: 10px; font-size: 13px; color: #555;">
+                  Answered: {{answeredCount}} / {{totalRequired}}
+                </div>
+                <button class="button" ng-click="advance_stimuli()" ng-disabled="!canProceed()" ng-class="{'disabled': !canProceed()}">
+                  <span ng-if="hasMoreSegments()">Next Segment&ensp;▶</span>
+                  <span ng-if="!hasMoreSegments()">Next Video&ensp;▶</span>
+                </button>          
+                <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                  <strong>Please answer all questions before proceeding.</strong>
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+
+    <div ng-if="section === 'behavioral_description'" class="stimuli-container">
+      <div class="left-panel">
+        <div class="section_title">Video {{stim_id + 1}} / {{stimuli_set.length}}</div>
+        <div class="progress-bar">
+          <div class="progress-fill" ng-style="{'width': ((stim_id + 1) / stimuli_set.length * 100) + '%'}"></div>
+        </div>
+        <div class="video-container">
+          <video id="fullVideo" class="video-player" ng-src="{{active_stimuli_set[stim_id].video}}" controls muted></video>
+        </div>
+      </div>
+
+      <div class="right-panel">
+        <div class="question-group">
+          <div class="question-title">Behavioral Description</div>
+          <div class="panel-body">
+            <p><strong>Please watch the complete video above and describe what happened in one sentence.</strong></p>
+            <p>Focus on the main actions, interactions, or behaviors you observed between the agents.</p>
+            
+            <div style="margin: 20px 0;">
+              <label for="behavioral-description" style="display: block; margin-bottom: 10px; font-weight: 600;">
+                Your description:
+              </label>
+              <textarea 
+                id="behavioral-description"
+                ng-model="form.behavioralDescription" 
+                style="width: 100%; height: 120px; padding: 15px; border: 2px solid var(--medium-gray); border-radius: 8px; font-size: 16px; font-family: inherit; resize: vertical;"
+                maxlength="500"
+              ></textarea>
+              <div style="text-align: right; margin-top: 5px; font-size: 12px; color: #666;">
+                {{form && form.behavioralDescription ? form.behavioralDescription.length : 0}}/500 characters
+              </div>
+            </div>
+            
+            <div class="controls">
+              <button class="button" ng-click="submitBehavioralDescription()" ng-disabled="!(form && form.behavioralDescription) || form.behavioralDescription.trim() === ''">
+                Continue to Next Video ▶
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div ng-if="section === 'demographics'" class="quiz-section">
+      <div class="question-group">
+        <div class="question-title">Demographics</div>
+        <div class="panel-body">
+          <div style="display:flex; gap:20px; flex-wrap:wrap;">
+            <div style="min-width:220px;">
+              <label for="age" style="display:block; margin-bottom:8px; font-weight:600;">Age (18-100)</label>
+              <input id="age" type="number" min="18" max="100" ng-model="demographics.age" style="width:160px; padding:8px; border:1px solid var(--medium-gray); border-radius:6px;">
+            </div>
+            <div style="min-width:260px;">
+              <label style="display:block; margin-bottom:8px; font-weight:600;">Gender</label>
+              <select ng-model="demographics.gender" style="width:240px; padding:8px; border:1px solid var(--medium-gray); border-radius:6px;">
+                <option value="" disabled selected>Select</option>
+                <option value="man">Man</option>
+                <option value="woman">Woman</option>
+                <option value="non_binary">Non-binary</option>
+                <option value="prefer_not_say">Prefer not to say</option>
+                <option value="self_describe">Self-describe</option>
+              </select>
+              <div ng-if="demographics.gender === 'self_describe'" style="margin-top:8px;">
+                <input type="text" placeholder="Please self-describe" ng-model="demographics.genderSelfDescribe" style="width:240px; padding:8px; border:1px solid var(--medium-gray); border-radius:6px;">
+              </div>
+            </div>
+          </div>
+          <div class="controls" style="margin-top:20px;">
+            <button class="button" ng-click="submitDemographics()" ng-disabled="!isValidDemographics()">Continue ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div ng-if="section === 'feedback'" class="quiz-section">
+      <div class="question-group">
+        <div class="question-title">Final Feedback</div>
+        <div class="panel-body">
+          <label style="display:block; margin-bottom:8px; font-weight:600;">Please provide feedback on the experiment. For example, please describe if anything went wrong or if you have any suggestions.</label>
+          <textarea ng-model="feedback.text" style="width:100%; height:120px; padding:12px; border:1px solid var(--medium-gray); border-radius:6px; resize:vertical;"></textarea>
+          <div class="controls" style="margin-top:20px;">
+            <button class="button" ng-click="submitFeedback()">Submit ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div ng-if="section === 'endscreen'" class="quiz-section" style="text-align: center;">
+      <h2>Experiment Complete!</h2>
+      <p>Thank you for participating.</p>
+      <div ng-init="storeCompletionData()"></div>
+    </div>
+
+  </div>
+</body>
+</html>

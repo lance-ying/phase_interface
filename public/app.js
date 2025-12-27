@@ -120,7 +120,7 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       row.openA = !row.openA;
       row.openB = false;
     } else {
-      if (!row.category) return;
+      if (!row.category || row.category === 'social') return;
       row.openB = !row.openB;
       row.openA = false;
     }
@@ -138,7 +138,14 @@ experimentApp.controller('ExperimentController', function ExperimentController($
     row.optionId = null;
     row.optionLabel = null;
     row.openA = false;
-    row.openB = true; // open next dropdown automatically
+    if (category === 'social') {
+      // No specific sub-option needed; the slider already captures Hindering/Neutral/Helping
+      row.openB = false;
+      row.optionId = 'social';
+      row.optionLabel = 'Social';
+    } else {
+      row.openB = true; // open next dropdown automatically for physical
+    }
     $scope.updateGoalSelectionsAnswered();
   };
 
@@ -166,7 +173,6 @@ experimentApp.controller('ExperimentController', function ExperimentController($
     $scope.updateGoalSelectionsAnswered();
   };
 
-  // --- Merged Tutorial and Quiz Logic ---
   // This function handles the simple "Next" for tutorial pages (0-6)
   $scope.advance_tutorial = function() {
     if ($scope.inst_id <= 6) {
@@ -202,8 +208,9 @@ experimentApp.controller('ExperimentController', function ExperimentController($
         $scope.inst_id = 9;
       $scope.show_repeat_warning = false;
     } else {
-      $scope.show_repeat_warning = true;
-        $scope.inst_id = 3; // Back to Knowledge section
+        // Stay on current quiz, show transient warning
+        $scope.show_repeat_warning = true;
+        $timeout(function() { $scope.show_repeat_warning = false; }, 2000);
     }
   };
 
@@ -227,11 +234,11 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       }
       
       if (correct) {
-          $scope.inst_id = 10;
+        $scope.inst_id = 10;
       $scope.show_repeat_warning = false;
     } else {
-      $scope.show_repeat_warning = true;
-          $scope.inst_id = 4; // Back to Goals section
+        $scope.show_repeat_warning = true;
+        $timeout(function() { $scope.show_repeat_warning = false; }, 2000);
     }
   };
 
@@ -255,11 +262,11 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       }
       
       if (correct) {
-          $scope.inst_id = 11;
+        $scope.inst_id = 11;
       $scope.show_repeat_warning = false;
     } else {
-      $scope.show_repeat_warning = true;
-          $scope.inst_id = 5; // Back to Relations section
+        $scope.show_repeat_warning = true;
+        $timeout(function() { $scope.show_repeat_warning = false; }, 2000);
     }
   };
 
@@ -283,22 +290,23 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       }
       
       if (correct) {
-          $scope.inst_id = 12;
+        $scope.inst_id = 12;
       $scope.show_repeat_warning = false;
     } else {
-      $scope.show_repeat_warning = true;
-          $scope.inst_id = 6; // Back to Strength section
+        $scope.show_repeat_warning = true;
+        $timeout(function() { $scope.show_repeat_warning = false; }, 2000);
       }
   };
 
   $scope.startMainExperiment = function() {
       $scope.section = 'stimuli';
-      // Ensure indices reset when entering main experiment
+      // Ensure indices reset when entering main experiment (no segments version)
       $scope.isTrial = false;
       $scope.stim_id = 0;
       $scope.part_id = 0;
       $scope.questionsVisible = false;
       $scope.reset_response();
+      $scope.prepareStatementsForCurrent();
       
       // Store experiment start data to Firebase
       try {
@@ -318,74 +326,37 @@ experimentApp.controller('ExperimentController', function ExperimentController($
         console.error("Firebase error in startMainExperiment:", error);
       }
       
-      $timeout($scope.startSegmentPlayback, 500); // Wait for UI to update
+      $timeout($scope.startFullVideoPlayback, 500); // Wait for UI to update
   };
 
-  // --- Experiment Logic (Two-Panel Version) ---
+  // --- Experiment Logic ---
   $scope.reset_response = function() {
     console.log("DEBUG: reset_response called");
     $scope.response = {
-      // Red Agent (agent0) physical goal - combined options
-      agent0_goal_go_to_lm0: 50,
-      agent0_goal_go_to_lm1: 50,
-      agent0_goal_go_to_lm2: 50,
-      agent0_goal_go_to_lm3: 50,
-      agent0_goal_item0_to_lm0: 50,
-      agent0_goal_item0_to_lm1: 50,
-      agent0_goal_item0_to_lm2: 50,
-      agent0_goal_item0_to_lm3: 50,
-      agent0_goal_item1_to_lm0: 50,
-      agent0_goal_item1_to_lm1: 50,
-      agent0_goal_item1_to_lm2: 50,
-      agent0_goal_item1_to_lm3: 50,
-      agent0_goal_no_physical: 50,
-      agent0_social_goal: 50, // Default to neutral
-      
-      // Green Agent (agent1) goals
-      agent1_goal_go_to_lm0: 50,
-      agent1_goal_go_to_lm1: 50,
-      agent1_goal_go_to_lm2: 50,
-      agent1_goal_go_to_lm3: 50,
-      agent1_goal_item0_to_lm0: 50,
-      agent1_goal_item0_to_lm1: 50,
-      agent1_goal_item0_to_lm2: 50,
-      agent1_goal_item0_to_lm3: 50,
-      agent1_goal_item1_to_lm0: 50,
-      agent1_goal_item1_to_lm1: 50,
-      agent1_goal_item1_to_lm2: 50,
-      agent1_goal_item1_to_lm3: 50,
-      agent1_goal_no_physical: 50,
-      agent1_social_goal: 50, // Default to neutral
-      
-      // Overall ratings
-      relationship: 50, // Default to neutral
+      // Statement ratings (0-100) shown after full video
+      statementRatings: [], // populated when statements are prepared
+      statementTouched: [], // track interaction per statement
       
       // Tracking variables for completion
       answered: {
-        // New gating: red selections + green selections + relationship
-        goal_selections_agent0: false,
-        goal_selections_agent1: false,
-        relationship: false
+        // New gating: statements only
+        statements: false
       }
     };
     $scope.answeredCount = 0;
+    $scope.totalRequired = 0;
     console.log("DEBUG: response set to:", $scope.response);
     console.log("DEBUG: answered flags:", $scope.response.answered);
-    // Initialize Top Goals structures
-    if (!$scope.goalOptions) { $scope.initGoalOptions(); }
-    $scope.initTopGoals();
+    // Initialize goal options/top goals no longer required for this version
   };
 
-  // Recompute answered count
-  $scope.totalRequired = 3; // red selections, green selections, relationship
+  // Recompute answered count dynamically (#touched statements)
   $scope.updateAnsweredCount = function() {
     if (!$scope.response || !$scope.response.answered) { $scope.answeredCount = 0; return; }
-    const a = $scope.response.answered;
-    let count = 0;
-    count += a.goal_selections_agent0 ? 1 : 0;
-    count += a.goal_selections_agent1 ? 1 : 0;
-    count += a.relationship ? 1 : 0;
-    $scope.answeredCount = count;
+    const touched = Array.isArray($scope.response.statementTouched) ? $scope.response.statementTouched : [];
+    const touchedCount = touched.filter(function(v) { return !!v; }).length;
+    $scope.answeredCount = touchedCount;
+    $scope.totalRequired = ($scope.currentStatements ? $scope.currentStatements.length : 0);
   };
 
   $scope.init = function() {
@@ -415,7 +386,7 @@ experimentApp.controller('ExperimentController', function ExperimentController($
     }
   };
 
-  // Helper to mark an individual slider element as interacted (for styling)
+  // Helper to mark an individual slider element as interacted
   $scope.markSliderElementInteracted = function($event) {
     try {
       const el = $event && $event.target;
@@ -427,30 +398,46 @@ experimentApp.controller('ExperimentController', function ExperimentController($
     }
   };
   
-  $scope.startSegmentPlayback = function() {
-    // Ensure we're in the correct section and DOM is ready
+  // Play the full video and show questions after it ends
+  $scope.startFullVideoPlayback = function() {
     if ($scope.section !== 'stimuli') { return; }
     const video = document.getElementById('stimuliVideo');
     if (!video) {
-        // DOM not ready yet; try again shortly only if still in stimuli
-        $timeout($scope.startSegmentPlayback, 100);
-        return;
+      $timeout($scope.startFullVideoPlayback, 100);
+      return;
     }
-    if (!$scope.active_stimuli_set[$scope.stim_id] || !$scope.active_stimuli_set[$scope.stim_id].segments[$scope.part_id]) {
-        console.error("Stimulus or segment not found!", $scope.stim_id, $scope.part_id);
-        return;
+    const stimObj = ($scope.active_stimuli_set || [])[ $scope.stim_id ];
+    // per-video cutoff seconds:
+    // - Prefer explicit stimObj.play_until if provided
+    // - Else, use the last segment end if available
+    // - Else, fall back to natural video end
+    let cutoffSeconds = null;
+    try {
+      if (stimObj && typeof stimObj.play_until === 'number' && isFinite(stimObj.play_until)) {
+        cutoffSeconds = Number(stimObj.play_until);
+      } else if (stimObj && Array.isArray(stimObj.segments) && stimObj.segments.length > 0) {
+        const lastSeg = stimObj.segments[stimObj.segments.length - 1];
+        if (lastSeg && typeof lastSeg.end === 'number' && isFinite(lastSeg.end)) {
+          cutoffSeconds = Number(lastSeg.end);
+        }
+      }
+    } catch (e) {
+      console.warn('Unable to derive cutoffSeconds from stimulus object:', e);
     }
-    const segment = $scope.active_stimuli_set[$scope.stim_id].segments[$scope.part_id];
-    
-    video.currentTime = segment.start;
-    video.play();
-
-    const checkTime = function() {
-      if (video.currentTime >= segment.end) {
-        video.pause();
-        video.removeEventListener('timeupdate', checkTime);
+    // Reset visibility until video finishes
+    $scope.$applyAsync(() => { $scope.questionsVisible = false; });
+    try {
+      video.currentTime = 0;
+      // Remove previous listeners
+      if (video._endedHandler) {
+        video.removeEventListener('ended', video._endedHandler);
+      }
+      if (video._timeUpdateHandler) {
+        video.removeEventListener('timeupdate', video._timeUpdateHandler);
+      }
+      const onEnded = function() {
         $scope.$apply(() => { $scope.questionsVisible = true; });
-        // After questions are shown, bind an input listener to all sliders once
+        // Bind slider interaction class
         $timeout(() => {
           try {
             const sliders = document.querySelectorAll('.goal-slider');
@@ -464,12 +451,27 @@ experimentApp.controller('ExperimentController', function ExperimentController($
             console.warn('Unable to bind slider interaction listeners:', e);
           }
         }, 0);
+      };
+      video._endedHandler = onEnded;
+      video.addEventListener('ended', onEnded);
+      // If a cutoff time is specified, stop playback at that time instead of natural end
+      if (cutoffSeconds !== null && isFinite(cutoffSeconds)) {
+        const onTimeUpdate = function() {
+          if (video.currentTime >= cutoffSeconds) {
+            try {
+              video.pause();
+            } catch (e) {}
+            video.removeEventListener('timeupdate', onTimeUpdate);
+            onEnded();
+          }
+        };
+        video._timeUpdateHandler = onTimeUpdate;
+        video.addEventListener('timeupdate', onTimeUpdate);
       }
-    };
-    // Ensure no old listeners are attached
-    video.removeEventListener('timeupdate', video.timeUpdateHandler);
-    video.timeUpdateHandler = checkTime;
-    video.addEventListener('timeupdate', video.timeUpdateHandler);
+      video.play().catch((e) => console.warn('Autoplay failed, user interaction may be required:', e));
+    } catch (e) {
+      console.error('Error starting full video playback:', e);
+    }
   };
   
   $scope.replayCurrentSegment = function() {
@@ -477,65 +479,254 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       video.pause();
       // Use timeout to ensure UI updates before playback starts
       $timeout(() => {
-        $scope.startSegmentPlayback();
+        $scope.startFullVideoPlayback();
       }, 100);
+  };
+
+  // ===== Statement generation (single-agent, include both ground truths) =====
+  $scope.prepareStatementsForCurrent = function() {
+    const stim = ($scope.active_stimuli_set || [])[ $scope.stim_id ];
+    if (!stim) { $scope.currentStatements = []; $scope.response.statementRatings = []; return; }
+    // Parse per-agent clauses from description to ensure single-agent statements
+    const desc = (stim.description || '').trim();
+    const toLower = desc.toLowerCase();
+    let redTruth = null;
+    let greenTruth = null;
+    if (desc) {
+      // Split by ';' and map to agent if prefixed
+      const parts = desc.split(';').map(function(p){ return p.trim(); }).filter(Boolean);
+      parts.forEach(function(p) {
+        const pl = p.toLowerCase();
+        if (pl.startsWith('red ') || pl.startsWith('red agent ')) { redTruth = p; }
+        if (pl.startsWith('green ') || pl.startsWith('green agent ')) { greenTruth = p; }
+      });
+      // Heuristic for chasing phrasing
+      if (!redTruth || !greenTruth) {
+        if (/red\s+chasing\s+green/.test(toLower)) {
+          redTruth = redTruth || 'red chasing green';
+          greenTruth = greenTruth || 'green being chased by red';
+        } else if (/green\s+chasing\s+red/.test(toLower)) {
+          greenTruth = greenTruth || 'green chasing red';
+          redTruth = redTruth || 'red being chased by green';
+        }
+      }
+    }
+    // Fallback if still missing: generic safe phrasing (kept minimal and agent-specific)
+    if (!redTruth) { redTruth = 'red agent was active in the scene'; }
+    if (!greenTruth) { greenTruth = 'green agent was active in the scene'; }
+    // Normalize truths to goal-style phrasing
+    const toGoal = function(agent, text) {
+      let s = (text || '').trim();
+      if (/^the\s+(red|green)\s+agent(?:’s|'s)?\s+goal\s+is\s+to/i.test(s)) { return s; }
+
+      // Strip leading agent tokens if present
+      s = s.replace(/^(red|green)\s+agent\s*/i, '')
+           .replace(/^(red|green)\s*/i, '');
+
+      // Basic verb normalizations
+      s = s.replace(/^chasing\s+/i, 'chase ')
+           .replace(/^being\s+chased\s+/i, 'be chased ')
+           .replace(/^remained\s+/i, 'remain ')
+           .replace(/^was\s+/i, 'be ')
+           .replace(/^is\s+/i, 'be ');
+
+      // Grammar fixes for common actions
+      // 1) put/move X object to Y landmark -> put the X object on the Y landmark
+      s = s.replace(/^(?:put|move)\s+(\w+)\s+object\s+to\s+(\w+)\s+landmark\b/i,
+                    (_m, objColor, lmColor) => `put the ${objColor} object on the ${lmColor} landmark`);
+      // 2) send/give X object to {agent} agent -> give the X object to the {agent} agent
+      s = s.replace(/^(?:send|give)\s+(\w+)\s+object\s+to\s+(red|green)\s+agent\b/i,
+                    (_m, objColor, targetAgent) => `give the ${objColor} object to the ${targetAgent} agent`);
+      // 3) go to {color} landmark -> go to the {color} landmark
+      s = s.replace(/^(?:go\s*to|goto)\s+(\w+)\s+landmark\b/i,
+                    (_m, lmColor) => `go to the ${lmColor} landmark`);
+      // 4) chase {agent} -> chase the {agent}
+      s = s.replace(/^chase\s+(red|green)\s+agent\b/i,
+                    (_m, a) => `chase the ${a} agent`);
+      // 5) be chased by {agent} -> be chased by the {agent}
+      s = s.replace(/^be\s+chased\s+by\s+(red|green)\s+agent\b/i,
+                    (_m, a) => `be chased by the ${a} agent`);
+
+      return `The ${agent} agent’s goal is to ${s}`;
+    };
+    redTruth = toGoal('red', redTruth);
+    greenTruth = toGoal('green', greenTruth);
+    // Build distractor pool: collect single-agent clauses from other stimuli
+    const otherClauses = [];
+    ($scope.stimuli_set || []).forEach(function(s) {
+      if (!s || s.name === stim.name || !s.description) { return; }
+      const p = s.description.split(';').map(function(x){ return x.trim(); }).filter(Boolean);
+      p.forEach(function(c) {
+        const cl = c.toLowerCase();
+        if (cl.startsWith('red ') || cl.startsWith('red agent ') || cl.startsWith('green ') || cl.startsWith('green agent ')) {
+          otherClauses.push(c);
+        } else if (/red\s+chasing\s+green/.test(cl)) {
+          otherClauses.push('green being chased by red');
+        } else if (/green\s+chasing\s+red/.test(cl)) {
+          otherClauses.push('red being chased by green');
+        }
+      });
+    });
+    // Shuffle helper
+    const shuffle = (arr) => {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    };
+    // Deduplicate and remove truths
+    const uniqueDistractors = Array.from(new Set(otherClauses)).filter(function(c) {
+      const cl = c.toLowerCase();
+      return cl !== redTruth.toLowerCase() && cl !== greenTruth.toLowerCase();
+    });
+    const negs = shuffle(uniqueDistractors).slice(0, 3);
+    while (negs.length < 3) {
+      const fillers = [
+        'The red agent’s goal is to move aimlessly',
+        'The green agent’s goal is to remain stationary',
+        'The red agent’s goal is to avoid interacting with landmarks'
+      ];
+      const candidate = fillers[negs.length] || `The red agent’s goal is to perform an unrelated action ${negs.length + 1}`;
+      if (candidate.toLowerCase() !== redTruth.toLowerCase() && candidate.toLowerCase() !== greenTruth.toLowerCase()) {
+        negs.push(candidate);
+      } else {
+        negs.push(candidate + '.');
+      }
+    }
+    // Occasionally inject a social-style distractor (help/hinder) in place of one of the negs
+    try {
+      const socialCandidates = [
+        'The red agent’s goal is to help the green agent',
+        'The red agent’s goal is to hinder the green agent',
+        'The green agent’s goal is to help the red agent',
+        'The green agent’s goal is to hinder the red agent',
+      ];
+      if (Math.random() < 0.5 && negs.length > 0) { // ~50% chance to include one social distractor
+        const pick = socialCandidates[Math.floor(Math.random() * socialCandidates.length)];
+        const lowerPick = pick.toLowerCase();
+        const inTruths = lowerPick === (redTruth || '').toLowerCase() || lowerPick === (greenTruth || '').toLowerCase();
+        const inNegs = negs.some(function(n) { return (n || '').toLowerCase() === lowerPick; });
+        if (!inTruths && !inNegs) {
+          const replaceIdx = Math.floor(Math.random() * negs.length);
+          negs[replaceIdx] = pick;
+        }
+      }
+    } catch (e) {
+      console.warn('Unable to inject social-style distractor:', e);
+    }
+    // Normalize distractors to goal-style phrasing when possible
+    const detectAgent = function(s) {
+      const m = /^\s*(red|green)(?:\s+agent)?\b/i.exec(s || '');
+      return m ? m[1].toLowerCase() : null;
+    };
+    let normalizedNegs = negs.map(function(t) {
+      const a = detectAgent(t);
+      return a ? toGoal(a, t) : t;
+    }).filter(function(t) {
+      const tl = (t || '').toLowerCase();
+      return tl !== (redTruth || '').toLowerCase() && tl !== (greenTruth || '').toLowerCase();
+    });
+    // Top off if filtering removed items
+    if (normalizedNegs.length < 3) {
+      const fallbackNegs = [
+        'The red agent’s goal is to move aimlessly',
+        'The green agent’s goal is to remain stationary',
+        'The red agent’s goal is to avoid interacting with landmarks'
+      ];
+      for (let i = 0; normalizedNegs.length < 3 && i < fallbackNegs.length; i++) {
+        const cand = fallbackNegs[i];
+        const cl = cand.toLowerCase();
+        const exists = normalizedNegs.some(function(n) { return (n || '').toLowerCase() === cl; });
+        const isTruth = cl === (redTruth || '').toLowerCase() || cl === (greenTruth || '').toLowerCase();
+        if (!exists && !isTruth) {
+          normalizedNegs.push(cand);
+        }
+      }
+    }
+
+    // Build final 5 statements: 2 truths (red, green) + 3 distractors
+    const statements = [
+      { text: redTruth, isGroundTruth: true, agent: 'red' },
+      { text: greenTruth, isGroundTruth: true, agent: 'green' },
+      ...normalizedNegs.map(function(t) { return { text: t, isGroundTruth: false }; })
+    ];
+    $scope.currentStatements = shuffle(statements);
+    // Initialize to 50 to match slider default without firing change
+    $scope.response.statementRatings = new Array($scope.currentStatements.length).fill(50);
+    $scope.response.statementTouched = new Array($scope.currentStatements.length).fill(false);
+    $scope.totalRequired = $scope.currentStatements.length;
+    // Reset answered flags
+    if ($scope.response && $scope.response.answered) {
+      $scope.response.answered.statements = false;
+      $scope.updateAnsweredCount();
+    }
+  };
+
+  $scope.onStatementChange = function(index) {
+    if (!$scope.response) return;
+    if (Array.isArray($scope.response.statementTouched) && typeof index === 'number') {
+      $scope.response.statementTouched[index] = true;
+    }
+    const touchedArr = Array.isArray($scope.response.statementTouched) ? $scope.response.statementTouched : [];
+    const allTouched = touchedArr.length > 0 && touchedArr.every(function(v){ return !!v; });
+    if ($scope.response.answered) {
+      $scope.response.answered.statements = !!allTouched;
+      $scope.updateAnsweredCount();
+    }
   };
 
   $scope.advance_stimuli = function() {
     try {
       // Store response to Firebase
       const collection = $scope.isTrial ? 'trial' : 'results';
-      const path = `/${$scope.user_id}/${$scope.active_stimuli_set[$scope.stim_id].name}/segment_${$scope.part_id}`;
       const setData = getFirebaseSet();
       const ref = getFirebaseRef();
       const database = getFirebaseDatabase();
+      const currentStimObj = $scope.active_stimuli_set[$scope.stim_id];
+      const basePath = `/${$scope.user_id}/main_experiment/${currentStimObj.name}`;
       
-      const serializeRows = function(rows) {
-        return (rows || []).filter(function(r) { return !!r.optionId; }).map(function(r) {
-          return { category: r.category, optionId: r.optionId, label: r.optionLabel, weight: Number(r.weight) };
-        });
-      };
+      const statementsPayload = ($scope.currentStatements || []).map(function(s, idx) {
+        const rating = Array.isArray($scope.response.statementRatings) ? Number($scope.response.statementRatings[idx]) : null;
+        return { text: s.text, isGroundTruth: !!s.isGroundTruth, rating: rating };
+      });
       const payload = {
-        topGoalsAgent0: serializeRows($scope.topGoalsAgent0),
-        topGoalsAgent1: serializeRows($scope.topGoalsAgent1),
-        relationship: $scope.response.relationship,
+        statements: statementsPayload,
         video: ($scope.active_stimuli_set && $scope.active_stimuli_set[$scope.stim_id] ? $scope.active_stimuli_set[$scope.stim_id].video : null),
         timestamp: Date.now()
       };
-      setData(ref(database, `${collection}${path}`), payload)
+      // Write single response per video under main_experiment/{videoName}/response
+      setData(ref(database, `${collection}${basePath}/response`), payload)
         .then(() => {
           console.log("Data saved to Firebase successfully");
         })
         .catch((error) => {
           console.error("Error saving to Firebase:", error);
         });
-      
-      $scope.reset_response();
-      $scope.questionsVisible = false;
 
-      const currentStim = $scope.active_stimuli_set[$scope.stim_id];
-      if ($scope.part_id < currentStim.segments.length - 1) {
-        $scope.part_id++;
-    } else {
-        if ($scope.isTrial) {
-          // End trial and proceed to Quiz 1
-          $scope.section = 'instructions';
-          $scope.inst_id = 8; // Quiz 1 screen
-          $scope.isTrial = false;
-          $scope.part_id = 0;
-          $scope.active_stimuli_set = $scope.stimuli_set;
-        } else {
-          // All segments completed - go to behavioral description
-          $scope.section = 'behavioral_description';
-          if (!$scope.form) { $scope.form = {}; }
-          $scope.form.behavioralDescription = ""; // Reset description
-        }
+      // Store top-level metadata once per video
+      if ($scope.part_id === 0 && currentStimObj) {
+        try { setData(ref(database, `${collection}${basePath}/video`), currentStimObj.video); } catch (e) {}
       }
 
-      if ($scope.stim_id >= $scope.active_stimuli_set.length) {
-        $scope.section = 'endscreen';
+      // Proceed: show behavioral description for this video
+      $scope.reset_response();
+      $scope.questionsVisible = false;
+      if ($scope.isTrial) {
+        // End trial and proceed to Quiz 1
+        $scope.section = 'instructions';
+        $scope.inst_id = 8; // Quiz 1 screen
+        $scope.isTrial = false;
+        $scope.part_id = 0;
+        $scope.active_stimuli_set = $scope.stimuli_set;
       } else {
-        $timeout($scope.startSegmentPlayback, 100);
+        $scope.section = 'behavioral_description';
+        if (!$scope.form) { $scope.form = {}; }
+        $scope.form.behavioralDescription = "";
+      }
+      if ($scope.stim_id < $scope.active_stimuli_set.length) {
+        $timeout($scope.startFullVideoPlayback, 100);
       }
     } catch (error) {
       console.error("Firebase error:", error);
@@ -543,26 +734,18 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       $scope.reset_response();
       $scope.questionsVisible = false;
 
-      const currentStim = $scope.active_stimuli_set[$scope.stim_id];
-      if ($scope.part_id < currentStim.segments.length - 1) {
-        $scope.part_id++;
+      if ($scope.isTrial) {
+        $scope.section = 'instructions';
+        $scope.inst_id = 8;
+        $scope.isTrial = false;
+        $scope.active_stimuli_set = $scope.stimuli_set;
       } else {
-        if ($scope.isTrial) {
-          $scope.section = 'instructions';
-          $scope.inst_id = 8; // Quiz 1 screen
-          $scope.isTrial = false;
-          $scope.active_stimuli_set = $scope.stimuli_set;
-        } else {
-          $scope.section = 'behavioral_description';
-          if (!$scope.form) { $scope.form = {}; }
-          $scope.form.behavioralDescription = ""; // Reset description
-        }
+        $scope.section = 'behavioral_description';
+        if (!$scope.form) { $scope.form = {}; }
+        $scope.form.behavioralDescription = "";
       }
-
-      if ($scope.stim_id >= $scope.active_stimuli_set.length) {
-        $scope.section = 'endscreen';
-      } else {
-        $timeout($scope.startSegmentPlayback, 100);
+      if ($scope.stim_id < $scope.active_stimuli_set.length) {
+        $timeout($scope.startFullVideoPlayback, 100);
       }
     }
   };
@@ -580,12 +763,16 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       const currentStim = ($scope.active_stimuli_set && $scope.active_stimuli_set[$scope.stim_id]) || null;
       const videoName = currentStim ? currentStim.name : `video_${$scope.stim_id}`;
       
-      // Store description under the current video's path
-      setData(ref(database, `results/${$scope.user_id}/${videoName}/behavioral_description`), {
+      // Store description under main_experiment/{videoName}
+      setData(ref(database, `results/${$scope.user_id}/main_experiment/${videoName}/behavioral_description`), {
         description: $scope.form.behavioralDescription,
         timestamp: Date.now()
       }).then(() => {
         console.log("Behavioral description saved to Firebase successfully");
+        // Clean up legacy location if it exists
+        try {
+          setData(ref(database, `results/${$scope.user_id}/${videoName}`), null);
+        } catch (e) {}
         $scope.$applyAsync(function() {
           // Proceed to next video or finish
           if ($scope.stim_id < ($scope.active_stimuli_set?.length || 0) - 1) {
@@ -593,8 +780,9 @@ experimentApp.controller('ExperimentController', function ExperimentController($
             $scope.part_id = 0;
             $scope.questionsVisible = false;
             $scope.reset_response();
+            $scope.prepareStatementsForCurrent();
             $scope.section = 'stimuli';
-            $timeout($scope.startSegmentPlayback, 300);
+            $timeout($scope.startFullVideoPlayback, 300);
           } else {
             // Go to demographics after the last video
             $scope.section = 'demographics';
@@ -673,7 +861,8 @@ experimentApp.controller('ExperimentController', function ExperimentController($
 
   $scope.hasMoreSegments = function() {
     if (!$scope.active_stimuli_set[$scope.stim_id]) return false;
-    return $scope.part_id < $scope.active_stimuli_set[$scope.stim_id].segments.length - 1;
+    // No segments in this version; always false
+    return false;
   };
 
   $scope.startTrialRun = function() {
@@ -688,7 +877,8 @@ experimentApp.controller('ExperimentController', function ExperimentController($
     $scope.section = 'stimuli';
     $scope.questionsVisible = false;
     $scope.reset_response();
-    $timeout($scope.startSegmentPlayback, 500);
+    $scope.prepareStatementsForCurrent();
+    $timeout($scope.startFullVideoPlayback, 500);
   };
   
   // ==========================================================
@@ -704,9 +894,7 @@ experimentApp.controller('ExperimentController', function ExperimentController($
       }
 
       // Check if all required questions have been answered
-      const allAnswered = $scope.response.answered.goal_selections_agent0 && 
-                         $scope.response.answered.goal_selections_agent1 &&
-                         $scope.response.answered.relationship;
+      const allAnswered = $scope.response.answered.statements;
       
       console.log("Answered status:", $scope.response.answered);
       console.log("All answered:", allAnswered);
